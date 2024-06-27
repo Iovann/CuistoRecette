@@ -1,13 +1,13 @@
 import React, { useState } from 'react';
 import { Input, Ripple, initMDB } from "mdb-ui-kit";
 import { FcGoogle } from "react-icons/fc";
-import { FaFacebookSquare } from "react-icons/fa";
 import { Link, useNavigate } from 'react-router-dom';
 import { MdOutlineArrowBackIosNew } from "react-icons/md";
 import Loading from '../components/Loading';
 import firebaseApp from '../firebaseConfig';
 import { getAuth, GoogleAuthProvider, signInWithPopup, createUserWithEmailAndPassword } from "firebase/auth";
 import { getFirestore, setDoc, doc } from "firebase/firestore";
+import DividerWithText from '../components/divider';
 
 
 
@@ -39,14 +39,13 @@ const Inscription = () => {
 
       const db = getFirestore(firebaseApp);
       const userData = {
-        firstName:firstName,
+        firstName: firstName,
         lastName: lastName,
         email: user.email,
         phoneNumber: user.phoneNumber || "",
         avatar: user.photoURL
       };
 
-      // Sauvegarder les informations utilisateur dans Firestore
       await setDoc(doc(db, "users", user.uid), userData);
 
       navigate('/user');
@@ -73,7 +72,7 @@ const Inscription = () => {
         avatar
       });
 
-      navigate('/user'); // Redirect to home page or any other page
+      navigate('/user');
     } catch (error) {
       console.error("Error creating user:", error);
     } finally {
@@ -84,108 +83,105 @@ const Inscription = () => {
   return (
     <div className="container">
       <div className='row justify-content-center align-items-center vh-100'>
-        <div className="col-lg-5 shadow-lg px-4 py-5 rounded-5">
-          <Link to="/" className='fw-semibold text-black text-decoration-none'>
-            <MdOutlineArrowBackIosNew size={20} className='mx-2' />Retour a l'Acceuil
-          </Link>
-          <h2 className='text-center my-4'>Rejoignez notre Communauté</h2>
-          <form onSubmit={handleSubmit}>
-            <div className="row mb-4 gx-3">
-              <div className="col-6">
-                <div className="form-outline border-bottom border-2 border-brown">
-                  <input
-                    type="text"
-                    id="form3Example1"
-                    className="form-control"
-                    value={firstName}
-                    onChange={(e) => setFirstName(e.target.value)}
-                  />
-                  <label className="form-label" htmlFor="form3Example1">Nom</label>
+        <div className="col-11 col-md-8 col-lg-6 col-xl-5">
+          <p className="d-flex justify-content-center align-items-center">
+            <img src="/assets/icons/logo.svg" className='img-fluid' alt="" />
+            <span className='fw-bolder fs-3'>Cuisto<span style={{ color: "#974344" }}>Recettes</span> </span>
+          </p>
+          <div className="shadow-lg px-4 py-5 rounded-5">
+            <Link to="/" className='fw-semibold text-black text-decoration-none'>
+              <MdOutlineArrowBackIosNew size={20} className='mx-2' />Retour a l'Acceuil
+            </Link>
+            <h2 className='text-center my-4'>Rejoignez notre Communauté</h2>
+            <form onSubmit={handleSubmit} className='fw-semibold'>
+              <div className="row mb-4 gx-3">
+                <div className="col-6">
+                  <div className="form-outline border-bottom border-2 border-brown">
+                    <label className="form-label mb-0" htmlFor="form3Example1">Nom</label>
+                    <input
+                      type="text"
+                      id="form3Example1"
+                      className="form-control out border-0"
+                      value={firstName}
+                      onChange={(e) => setFirstName(e.target.value)}
+                    />
+                  </div>
+                </div>
+                <div className="col-6">
+                  <label className="form-label mb-0" htmlFor="form3Example2">Prénom</label>
+                  <div className="form-outline border-bottom border-2 border-brown">
+                    <input
+                      type="text"
+                      id="form3Example2"
+                      className="form-control out border-0"
+                      value={lastName}
+                      onChange={(e) => setLastName(e.target.value)}
+                    />
+                  </div>
                 </div>
               </div>
-              <div className="col-6">
-                <div className="form-outline border-bottom border-2 border-brown">
-                  <input
-                    type="text"
-                    id="form3Example2"
-                    className="form-control"
-                    value={lastName}
-                    onChange={(e) => setLastName(e.target.value)}
-                  />
-                  <label className="form-label" htmlFor="form3Example2">Prénom</label>
+
+              <div className="form-outline mb-4 border-bottom border-2 border-brown">
+                <label className="form-label mb-0" htmlFor="form3Example3">Email</label>
+                <input
+                  type="email"
+                  id="form3Example3"
+                  className="form-control out border-0"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                />
+              </div>
+
+              <div className="form-outline mb-4 border-bottom border-2 border-brown">
+                <label className="form-label mb-0" htmlFor="form6Example6">Téléphone</label>
+                <input
+                  type="tel"
+                  id="form6Example6"
+                  className="form-control out border-0"
+                  value={phoneNumber}
+                  onChange={(e) => setPhoneNumber(e.target.value)}
+                />
+              </div>
+
+              <div className="form-outline mb-4 border-bottom border-2 border-brown">
+                <label className="form-label mb-0" htmlFor="form3Example4">Mot de passe</label>
+                <input
+                  type="password"
+                  id="form3Example4"
+                  className="form-control out border-0"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                />
+              </div>
+
+              <button
+                data-mdb-ripple-init
+                type="submit"
+                className="btn bg-brown text-white fw-bold btn-block w-100 mb-4"
+              >
+                S'inscrire
+              </button>
+
+              <div className="d-flex justify-content-center">{loading && <Loading />}</div>
+              <div className="">
+              <DividerWithText text="ou" />
+              <div className="row justify-content-center">
+                  <div className="col-12 text-center mx-auto d-flex justify-content-center">
+                    <button
+                      data-mdb-ripple-init
+                      type="button"
+                      className="btn rounded-pill btn-floating py-2 text-start d-flex align-items-center"
+                      onClick={handleGoogleSignUp}
+                      style={{backgroundColor:"#EDEDED"}}
+                    >
+                      <FcGoogle className='mx-2 ' size={30} />
+                      <span className='text-capitalize'>S'inscrire <span className="text-lowercase">avec </span>Google</span>
+                    </button>
+                  </div>
                 </div>
               </div>
-            </div>
-
-            <div className="form-outline mb-4 border-bottom border-2 border-brown">
-              <input
-                type="email"
-                id="form3Example3"
-                className="form-control"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-              />
-              <label className="form-label" htmlFor="form3Example3">Email</label>
-            </div>
-
-            <div className="form-outline mb-4 border-bottom border-2 border-brown">
-              <input
-                type="tel"
-                id="form6Example6"
-                className="form-control"
-                value={phoneNumber}
-                onChange={(e) => setPhoneNumber(e.target.value)}
-              />
-              <label className="form-label" htmlFor="form6Example6">Téléphone</label>
-            </div>
-
-            <div className="form-outline mb-4 border-bottom border-2 border-brown">
-              <input
-                type="password"
-                id="form3Example4"
-                className="form-control"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-              />
-              <label className="form-label" htmlFor="form3Example4">Mot de passe</label>
-            </div>
-
-            <button
-              data-mdb-ripple-init
-              type="submit"
-              className="btn bg-brown text-white fw-bold btn-block mb-4"
-            >
-              S'inscrire
-            </button>
-            {loading && <Loading />}
-
-            <div className="">
-              <p className='text-center'>Vous pouvez également rejoindre avec:</p>
-              <div className="row gx-2">
-                <div className="col-lg-6">
-                  <button
-                    data-mdb-ripple-init
-                    type="button"
-                    className="btn btn-secondary-subtle btn-block rounded-pill btn-floating py-2 text-start d-flex align-items-center"
-                    onClick={handleGoogleSignUp}
-                  >
-                    <FcGoogle className='mx-2 ' size={30} />
-                    <span className='text-capitalize'>S'inscrire <span className="text-lowercase">avec </span>Google</span>
-                  </button>
-                </div>
-                <div className="col-lg-6">
-                  <button
-                    data-mdb-ripple-init
-                    type="button"
-                    className="btn btn-secondary-subtle btn-block rounded-pill btn-floating py-2 text-start d-flex align-items-center"
-                  >
-                    <FaFacebookSquare className='mx-2' size={30} color='blue' />
-                    <span className='text-capitalize'>S'inscrire <span className="text-lowercase">avec </span>Facebook</span>
-                  </button>
-                </div>
-              </div>
-            </div>
-          </form>
+            </form>
+          </div>
         </div>
       </div>
     </div>

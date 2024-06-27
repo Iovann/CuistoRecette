@@ -118,6 +118,27 @@ hr {
   height: 2em;
 }
 
+.divider-container {
+  display: flex;
+  align-items: center;
+  text-align: center;
+  margin: 20px 0;
+}
+
+.divider {
+  flex: 1;
+  border: 0;
+  height: 3px;
+  background: #000;
+  margin: 0 10px;
+}
+
+.divider-text {
+  padding: 0 10px;
+  color: #000;
+}
+
+
 @keyframes spin {
   0% {
       transform: rotate(0deg);
