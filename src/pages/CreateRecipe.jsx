@@ -1,0 +1,353 @@
+import React, { useState, useRef } from 'react';
+import NavbarProfile from '../components/NavbarProfile';
+import Footer from '../components/footer';
+import { MdDelete } from "react-icons/md";
+import { IoIosAddCircleOutline } from "react-icons/io";
+import { MdOutlineAddAPhoto } from "react-icons/md";
+import { Link } from 'react-router-dom';
+
+const CreateRecipe = () => {
+    const [imageUrl, setImageUrl] = useState(null);
+    const [description, setDescription] = useState('');
+    const [ingredients, setIngredients] = useState(['']);
+    const [items, setItems] = useState([{ photo: null, instructions: '' }]);
+    const [title, setTitle] = useState('');
+    const [prepTime, setPrepTime] = useState('');
+    const [cookTime, setCookTime] = useState('');
+    const [servings, setServings] = useState('');
+    const [cuisine, setCuisine] = useState('');
+    const [category, setCategory] = useState('');
+    const [photo, setPhoto] = useState(null);
+    const [formErrors, setFormErrors] = useState({
+        title: false,
+        description: false,
+        ingredients: false,
+        instructions: false,
+        servings: false,
+        prepTime: false,
+        cookTime: false,
+        cuisine: false,
+        category: false,
+        photo: false
+    });
+
+    const handleFileChange = (event) => {
+        const file = event.target.files[0];
+
+        if (file) {
+            const reader = new FileReader();
+
+            reader.onloadend = () => {
+                setImageUrl(reader.result);
+                setPhoto(reader.result);
+            };
+
+            reader.readAsDataURL(file);
+        }
+    };
+
+    const handleDescriptionChange = (event) => {
+        setDescription(event.target.value);
+        setFormErrors({ ...formErrors, description: event.target.value.trim() === '' });
+    };
+
+    const handleAddIngredient = () => {
+        setIngredients([...ingredients, '']);
+        setFormErrors({ ...formErrors, ingredients: false });
+    };
+
+    const handleChange = (index, event) => {
+        const newIngredients = [...ingredients];
+        newIngredients[index] = event.target.value;
+        setIngredients(newIngredients);
+    };
+
+    const handleRemoveIngredient = (index) => {
+        const newIngredients = ingredients.filter((_, i) => i !== index);
+        setIngredients(newIngredients);
+    };
+
+    const handleTitleChange = (event) => {
+        setTitle(event.target.value);
+        setFormErrors({ ...formErrors, title: event.target.value.trim() === '' });
+    };
+
+    const handlePrepTimeChange = (event) => {
+        setPrepTime(event.target.value);
+        setFormErrors({ ...formErrors, prepTime: event.target.value.trim() === '' });
+    };
+
+    const handleCookTimeChange = (event) => {
+        setCookTime(event.target.value);
+        setFormErrors({ ...formErrors, cookTime: event.target.value.trim() === '' });
+    };
+
+    const handleServingsChange = (event) => {
+        setServings(event.target.value);
+        setFormErrors({ ...formErrors, servings: event.target.value.trim() === '' });
+    };
+
+    const handleCuisineChange = (event) => {
+        setCuisine(event.target.value);
+        setFormErrors({ ...formErrors, cuisine: event.target.value.trim() === '' });
+    };
+
+    const handleCategoryChange = (event) => {
+        setCategory(event.target.value);
+        setFormErrors({ ...formErrors, category: event.target.value.trim() === '' });
+    };
+
+    const handleSubmit = async (event) => {
+        event.preventDefault();
+
+        // Check for any form errors
+        const hasErrors = Object.values(formErrors).some((error) => error);
+        if (hasErrors) {
+            alert('Veuillez remplir tous les champs obligatoires correctement.');
+            return;
+        }
+
+        // Proceed with form submission logic
+        const formData = new FormData();
+        formData.append('title', title);
+        formData.append('ingredients', ingredients.join(','));
+        formData.append('prep_time', prepTime);
+        formData.append('cook_time', cookTime);
+        formData.append('servings', servings);
+        if (photo) {
+            formData.append('photo', dataURLtoFile(photo, 'recipe-photo.jpg'));
+        }
+
+        try {
+            const token = localStorage.access;
+            const recipeResponse = await axios.post('http://127.0.0.1:8000/api/recipes/', formData, {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+
+            const recipeId = recipeResponse.data.id;
+            const steps = items.map((item, index) => {
+                const stepFormData = new FormData();
+                stepFormData.append('recipe', recipeId);
+                stepFormData.append('step_number', index + 1);
+                stepFormData.append('description', item.instructions);
+                if (item.photo) {
+                    stepFormData.append('photo', dataURLtoFile(item.photo, `step-photo-${index}.jpg`));
+                }
+                return stepFormData;
+            });
+
+            for (const stepFormData of steps) {
+                // await axios.post('http://127.0.0.1:8000/api/steps/', stepFormData, {
+                //     headers: {
+                //         'Content-Type': 'multipart/form-data',
+                //         'Authorization': `Bearer ${token}`
+                //     }
+                // });
+            }
+        } catch (error) {
+            console.error('Error submitting recipe:', error.response ? error.response.data : error.message);
+        }
+    };
+
+    const dataURLtoFile = (dataurl, filename) => {
+        const arr = dataurl.split(','), mime = arr[0].match(/:(.*?);/)[1];
+        const bstr = atob(arr[1]);
+        let n = bstr.length;
+        const u8arr = new Uint8Array(n);
+        while (n--) {
+            u8arr[n] = bstr.charCodeAt(n);
+        }
+        return new File([u8arr], filename, { type: mime });
+    };
+
+    const handleAddItem = () => {
+        setItems([...items, { photo: null, instructions: '' }]);
+    };
+
+    const handleRemoveItem = (index) => {
+        const newItems = items.filter((_, i) => i !== index);
+        setItems(newItems);
+    };
+
+    const handlePhotoChange = (index, event) => {
+        const newItems = [...items];
+        const newPhoto = event.target.files[0];
+        if (newPhoto) {
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                newItems[index].photo = reader.result;
+                setItems(newItems);
+            };
+            reader.readAsDataURL(newPhoto);
+        }
+    };
+
+    const handleInstructionsChange = (index, event) => {
+        const newItems = [...items];
+        newItems[index].instructions = event.target.value;
+        setItems(newItems);
+        setFormErrors({ ...formErrors, instructions: event.target.value.trim() === '' });
+    };
+
+    return (
+        <>
+            <NavbarProfile />
+            <div className="container">
+                <hr />
+                <div className='row justify-content-between align-items-center'>
+                    <div className="col-8">
+                        <p className='fw-bold display-6 mb-0'>Créer une recette</p>
+                    </div>
+                    <div className="col-4 text-end">
+                        <Link to="/user"><button className='btn bg-brown text-capitalize mb-0 text-white fw-bolder' onClick={handleSubmit}>Enregistrer</button></Link>
+                    </div>
+                </div>
+                <hr />
+                <div className="row justify-content-center">
+                    <div className="col-lg-6 pb-5">
+                        <div className="mb-3 border-bottom border-brown border-2">
+                            <label htmlFor="title" className="form-label fw-bold fs-4 text-black">Nom de la recette:</label>
+                            <input type="text" className={`form-control form-control-outline ${formErrors.title ? 'is-invalid' : ''}`} id="title" placeholder="Nom de la recette" value={title} onChange={handleTitleChange} required />
+                            {formErrors.title && <div className="invalid-feedback">Veuillez entrer un nom de recette valide.</div>}
+                        </div>
+
+                        <div className="mx-4 mb-3 my-1">
+                            <label htmlFor="recipeimage" className="form-label fw-bold fs-4 text-black">Image de la recette</label>
+                            <div style={{ minHeight: "250px" }} className='bg-secondary-subtle' id='recipeimage'>
+                                {imageUrl && (
+                                    <img src={imageUrl} alt="Uploaded" style={{ maxWidth: '100%', height: '250px' }} />
+                                )}
+                            </div>
+                            <input
+                                className={`form-control mt-2 ${formErrors.photo ? 'is-invalid' : ''}`}
+                                type="file"
+                                onChange={handleFileChange}
+                                required
+                            />
+                            {formErrors.photo && <div className="invalid-feedback">Veuillez télécharger une image pour la recette.</div>}
+                        </div>
+
+                        <div>
+                            <div className="border-bottom border-2 border-brown">
+                                <label htmlFor="recipeDescription" className="form-label fw-bold fs-4 text-black">Description de la recette</label>
+                                <textarea
+                                    id="recipeDescription"
+                                    className={`form-control form-control-lg border-0 out rounded-2 ${formErrors.description ? 'is-invalid' : ''}`}
+                                    value={description}
+                                    onChange={handleDescriptionChange}
+                                    maxLength="250"
+                                    rows="1"
+                                    placeholder='Décrivez la recette'
+                                    required
+                                ></textarea>
+                                <p className="text-end mb-3"><small className="text-muted">{description.length}/250</small></p>
+                                {formErrors.description && <div className="invalid-feedback">Veuillez entrer une description valide pour la recette.</div>}
+                            </div>
+                        </div>
+
+                        <h3 className='fw-bold'>Ingrédients:</h3>
+                        {ingredients.map((ingredient, index) => (
+                            <div key={index} className="ingredient-input border-bottom border-3 border-brown input-group mb-3">
+                                <input
+                                    className={`form-control out border-0 ${formErrors.ingredients ? 'is-invalid' : ''}`}
+                                    type="text"
+                                    value={ingredient}
+                                    onChange={(event) => handleChange(index, event)}
+                                    placeholder={`Ingrédient ${index + 1}`}
+                                    required
+                                />
+                                <button type="button" className='btn btn-light' onClick={() => handleRemoveIngredient(index)}><MdDelete size={25} color='#B55D51' /></button>
+                            </div>
+                        ))}
+                        <button type="button" className='btn btn-light' onClick={handleAddIngredient}><IoIosAddCircleOutline size={30} color='#B55D51' /></button>
+
+                        <h3 className='fw-bold mt-5 mb-2'>Instructions:</h3>
+                        {items.map((item, index) => (
+                            <div key={index} className="item-input">
+                                <h4>Etape {index + 1}</h4>
+                                <div className="photo-container photo mb-2">
+                                    {item.photo ? (
+                                        <img src={item.photo} onClick={() => document.getElementById(`photo-input-${index}`).click()} alt={`Photo ${index + 1}`} className="photo" />
+                                    ) : (
+                                        <div className='bg-secondary-subtle rounded-3 photo my-2 mx-1 align-items-center row justify-content-center fw-bold' onClick={() => document.getElementById(`photo-input-${index}`).click()}>
+                                            <MdOutlineAddAPhoto size={30} className='mt-3' />
+                                            <p className='text-center'>Ajouter</p>
+                                        </div>
+                                    )}
+                                    <input
+                                        type="file"
+                                        id={`photo-input-${index}`}
+                                        onChange={(event) => handlePhotoChange(index, event)}
+                                        style={{ display: 'none' }}
+                                    />
+                                </div>
+                                <div className="input-group border-bottom border-3 border-brown mb-3">
+                                    <textarea
+                                        value={item.instructions}
+                                        onChange={(event) => handleInstructionsChange(index, event)}
+                                        placeholder=""
+                                        rows="3"
+                                        className={`form-control form-control-lg text-height out border-0 ${formErrors.instructions ? 'is-invalid' : ''}`}
+                                        aria-label="With textarea"
+                                        required
+                                    ></textarea>
+                                    <button type="button" className='btn btn-light input-group-text' onClick={() => handleRemoveItem(index)}><MdDelete size={25} color='#B55D51' /></button>
+                                </div>
+                                {formErrors.instructions && <div className="invalid-feedback">Veuillez entrer des instructions valides pour l'étape.</div>}
+                            </div>
+                        ))}
+                        <button type="button" className='btn btn-light' onClick={handleAddItem}><IoIosAddCircleOutline size={30} color='#B55D51' /></button>
+
+                        <div className="my-3">
+                            <label htmlFor="portion" className="form-label fw-bold fs-4 text-black">Portion</label>
+                            <input type="text" className={`form-control ${formErrors.servings ? 'is-invalid' : ''}`} id="portion" placeholder="Cette recette nourira combien de personnes?" value={servings} onChange={handleServingsChange} required />
+                            {formErrors.servings && <div className="invalid-feedback">Veuillez entrer le nombre de portions correctement.</div>}
+                        </div>
+
+                        <div className="my-3">
+                            <label htmlFor="prep" className="form-label fw-bold fs-4 text-black">Temps de préparation</label>
+                            <input type="text" className={`form-control ${formErrors.prepTime ? 'is-invalid' : ''}`} id="prep" placeholder="Temps de préparation" value={prepTime} onChange={handlePrepTimeChange} required />
+                            {formErrors.prepTime && <div className="invalid-feedback">Veuillez entrer le temps de préparation correctement.</div>}
+                        </div>
+
+                        <div className="my-3">
+                            <label htmlFor="cuisson" className="form-label fw-bold fs-4 text-black">Temps de cuisson</label>
+                            <input type="text" className={`form-control ${formErrors.cookTime ? 'is-invalid' : ''}`} id="cuisson" placeholder="Temps de cuisson" value={cookTime} onChange={handleCookTimeChange} required />
+                            {formErrors.cookTime && <div className="invalid-feedback">Veuillez entrer le temps de cuisson correctement.</div>}
+                        </div>
+
+                        <div className="my-3">
+                            <label htmlFor="cuisine" className="form-label fw-bold fs-4 text-black">Cuisine</label>
+                            <select className={`form-select ${formErrors.cuisine ? 'is-invalid' : ''}`} aria-label="Default select example" id='cuisine' value={cuisine} onChange={handleCuisineChange} required>
+                                <option value="">---------------</option>
+                                <option value="Africaine">Africaine</option>
+                                <option value="Européenne">Européenne</option>
+                                <option value="Américaine">Américaine</option>
+                                <option value="Italienne">Italienne</option>
+                            </select>
+                            {formErrors.cuisine && <div className="invalid-feedback">Veuillez sélectionner une cuisine.</div>}
+                        </div>
+
+                        <div className="my-3">
+                            <label htmlFor="categorie" className="form-label fw-bold fs-4 text-black">Catégorie</label>
+                            <select className={`form-select ${formErrors.category ? 'is-invalid' : ''}`} aria-label="Default select example" id='categorie' required value={category} onChange={handleCategoryChange}>
+                                <option value="">---------------</option>
+                                <option value="Petit Déjeuner">Petit Déjeuner</option>
+                                <option value="Fast Food">Fast Food</option>
+                                <option value="Dîner">Dîner</option>
+                                <option value="Casse-croute">Casse-croute</option>
+                            </select>
+                            {formErrors.category && <div className="invalid-feedback">Veuillez sélectionner une categorie.</div>}
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+            <Footer />
+        </>
+    );
+};
+export default CreateRecipe

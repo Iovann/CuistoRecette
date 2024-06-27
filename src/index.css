@@ -1,0 +1,182 @@
+#fond {
+  background-image: url('/assets/icons/background.svg') !important;
+  background-position: right top;
+  background-repeat: no-repeat;
+  background-size: 55% !important;
+}
+
+#fond2 {
+  min-height: 50% !important;
+}
+
+.carousel-container {
+  height: 90vh !important;
+}
+
+.carousel-center {
+  margin-bottom: 20%;
+}
+
+.brown {
+  color: #B55D51 !important;
+}
+
+.bg-brown {
+  background-color: #B55D51 !important;
+}
+
+.border-brown {
+  border-color: #B55D51 !important;
+}
+
+.card {
+  transition: transform 0.5s ease-in-out !important;
+}
+
+.bg-rose {
+  background-color: #FFF0ED;
+}
+
+.text-height {
+  height: 3em !important;
+  line-height: 1em !important;
+}
+
+.circle-container {
+  width: 10em;
+  height: 10em;
+  border-radius: 50%;
+  overflow: hidden;
+  position: relative;
+}
+
+.photo {
+  width: 5em;
+  height: 5em;
+}
+
+.avatar {
+  width: 3em !important;
+  height: 3em !important;
+}
+
+.circle-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+hr {
+  border: 1px solid #000;
+}
+
+.loader-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.loader {
+  border: 5px solid #f3f3f3;
+  border-top: 5px solid #3498db;
+  border-radius: 50%;
+  width: 50px;
+  height: 50px;
+  animation: spin 2s linear infinite;
+}
+
+.image-container {
+  position: relative;
+  display: inline-block;
+}
+
+.image-container::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(139, 69, 19, 0.5);
+  mix-blend-mode: multiply;
+  pointer-events: none;
+}
+
+.image-container img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+
+.p-rating-item-active {
+  color: #B55D51;
+}
+
+.p-rating-icon{
+  width: 2em;
+  height: 2em;
+}
+
+@keyframes spin {
+  0% {
+      transform: rotate(0deg);
+  }
+
+  100% {
+      transform: rotate(360deg);
+  }
+}
+
+.bg-brown:hover {
+  background-color: #B55D51;
+}
+
+.card:hover {
+  transform: scale(1.06);
+}
+
+.out {
+  outline: none !important;
+}
+
+@media (max-width: 1199px) {
+  .text {
+      font-size: 2.25rem !important;
+  }
+}
+
+
+@media (max-width: 1399px) and (min-width:768px) {
+  .cals {
+      width: 51%;
+  }
+}
+
+@media (max-width: 400px) {
+  .circle-container {
+      width: 8em;
+      height: 8em;
+      border-radius: 50%;
+      overflow: hidden;
+      position: relative;
+  }
+
+  #fond {
+      background-image: none !important;
+  }
+
+  .brand {
+      font-size: 80% !important;
+  }
+}
+
+@media (max-width: 992px) {
+  .text-justify {
+      text-align: justify;
+  }
+
+  .carousel-container {
+      height: 45vh !important;
+  }
+}
