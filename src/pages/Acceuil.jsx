@@ -7,14 +7,14 @@ import Popular_row from '../components/popular_row';
 import { dataCategorie, dataRecipe, dataCard } from '../common/data';
 import Footer from '../components/footer';
 import HeroAcceuil from '../components/HeroAcceuil';
-
-
+import { useAuth } from '../contexts/AuthContext';
 
 const Acceuil = () => {
     const [error, setError] = useState(null);
     const [card, setCard] = useState([]);
     const [recipe, setRecipe] = useState([]);
     const [categorie, setCategorie] = useState([]);
+    const { currentUser } = useAuth();
 
     useEffect(() => {
         setCard(dataCard.slice(0, 6));
@@ -45,7 +45,13 @@ const Acceuil = () => {
                 <p className='brown fs-5 fw-bold text-end pb-5 pt-0'>Voir plus</p>
                 <Row_card card={recipe} />
             </div>
-
+            <h1>User Profile</h1>
+            <p><strong>UID:</strong> {currentUser.uid}</p>
+            <p><strong>Email:</strong> {currentUser.email}</p>
+            <p><strong>Display Name:</strong> {currentUser.displayName}</p>
+            <p><strong>Phone Number:</strong> {currentUser.phoneNumber}</p>
+            <p><strong>Photo URL:</strong> <img src={currentUser.photoURL} alt="Profile" /></p>
+            <p><strong>Provider ID:</strong> {currentUser.providerId}</p>
             <div className="container py-5">
                 <h1>Categories Populaire</h1>
                 <p className='brown fs-5 fw-bold text-end pb-5 pt-0'>Voir plus</p>

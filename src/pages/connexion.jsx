@@ -7,6 +7,8 @@ import { FcGoogle } from "react-icons/fc";
 import firebaseApp from '../firebaseConfig';
 import { getFirestore, setDoc, doc } from "firebase/firestore";
 import { getAuth, signInWithEmailAndPassword, GoogleAuthProvider, signInWithPopup } from "firebase/auth";
+import DividerWithText from '../components/divider';
+
 
 const Connexion = () => {
   initMDB({ Input, Ripple });
@@ -109,7 +111,7 @@ const Connexion = () => {
               <button type="submit" className="btn bg-brown text-white fw-bold btn-block w-100 mb-4" onClick={handleSignIn}>
                 Connexion
               </button>
-              <p className='text-center'>Vous pouvez également vous connectez avec:</p>
+              <DividerWithText text="ou" />
               <div className="row justify-content-center">
                 <div className="col-12 text-center mx-auto d-flex justify-content-center">
                   <button

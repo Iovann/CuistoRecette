@@ -15,7 +15,21 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     const auth = getAuth(firebaseApp);
     const unsubscribe = onAuthStateChanged(auth, (user) => {
-      setCurrentUser(user);
+      if (user) {
+        const userData = user.providerData[0];
+        setCurrentUser({
+          uid: user.uid,
+          email: user.email,
+          displayName: user.displayName,
+          photoURL: user.photoURL,
+          phoneNumber: user.phoneNumber,
+          providerId: user.providerId,
+        });
+        console.log(auth)
+        console.log(currentUser)
+      } else {
+        setCurrentUser(null);
+      }
       setLoading(false);
       console.log('User status changed:', user ? 'Connected' : 'Disconnected');
     });

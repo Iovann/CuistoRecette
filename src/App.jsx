@@ -11,6 +11,7 @@ import Profile from './pages/Profile';
 import CreateRecipe from './pages/CreateRecipe';
 import Recipe from './pages/Recipe';
 import ProtectedRoute from './components/ProtectedRoute';
+import UsersList from './pages/affiche';
 
 function App() {
   return (
@@ -25,6 +26,7 @@ function App() {
           <Route path="/user" element={<ProtectedRoute element={Acceuil} />} />
           <Route path="/user/profile" element={<ProtectedRoute element={Profile} />} />
           <Route path="/user/add" element={<ProtectedRoute element={CreateRecipe} />} />
+          <Route path="/user/list" element={<ProtectedRoute element={UsersList} />} />
 
           <Route path="*" element={<NotFound />} />
         </Routes>
