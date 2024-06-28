@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useRef } from 'react';
 import NavbarProfile from '../components/NavbarProfile';
 import Footer from '../components/footer';
 import { CiBookmark } from "react-icons/ci";
@@ -11,6 +11,7 @@ import { BsPersonCircle } from "react-icons/bs";
 
 const Profile = () => {
   const { userData } = useAuth();
+  const fileInputRef = useRef(null);
 
   const [firstName, setFirstName] = useState(userData.firstName);
   const [lastName, setLastName] = useState(userData.lastName);
@@ -24,8 +25,18 @@ const Profile = () => {
   const handleEmailChange = (e) => setEmail(e.target.value);
   const handlePhoneNumberChange = (e) => setPhoneNumber(e.target.value);
   const handlePasswordChange = (e) => setPassword(e.target.value);
-  const handleAvatarChange = (e) => setAvatar(e.target.files[0]);
   const fullname = `${userData.firstName} ${userData.lastName}`
+
+  const handleButtonClick = () => {
+    fileInputRef.current.click();
+  };
+
+  const handleAvatarChange = (event) => {
+    const file = event.target.files[0];
+    if (file) {
+      setAvatar(file);
+    }
+  };
   return (
     <div>
       <NavbarProfile name={fullname} image={userData.avatar} />
@@ -39,13 +50,19 @@ const Profile = () => {
           </div>
         </div>
         <hr />
-        <div className="row">
+        <div className="row align-items-center">
           <div className="col-lg-2 text-center">
             <div className='circle-container mx-auto d-flex align-items-center justify-content-center'>
               {userData.avatar && <img src={userData.avatar} className='circle-image' alt="" />}
               {!userData.avatar && <BsPersonCircle size={120} color='#B55D51' />}
             </div>
             <p className='text-center text-dark fw-bolder mt-2'>{firstName} {lastName}</p>
+          </div>
+
+
+          <div className="col-lg-3 gx-3 d-flex justify-content-xl-evenly justify-content-center">
+            <button onClick={handleButtonClick} className='btn bg-brown fw-semibold text-white mb-3 mx-3' >Modifier la photo</button>
+            <button onClick={handleButtonClick} className='btn fw-semibold mb-3 mx-3' style={{backgroundColor: '#EDEDED'}} >Supprimer</button>
           </div>
         </div>
 
@@ -116,13 +133,14 @@ const Profile = () => {
             <p className='text-end fw-semibold brown'>Changer le mot de passe</p>
           </div>
           <div className="col-lg-5">
-              <input
-                type="file"
-                id="photo"
-                className="form-control out border-0"
-                onChange={handleAvatarChange}
-                style={{display:'none'}}
-              />
+            <input
+              type="file"
+              id="photo"
+              ref={fileInputRef}
+              className="form-control out border-0"
+              onChange={handleAvatarChange}
+              style={{ display: 'none' }}
+            />
           </div>
         </div>
 
