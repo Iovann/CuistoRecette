@@ -6,8 +6,10 @@ import { BiSolidCategory } from "react-icons/bi";
 import { PiSignOutBold } from "react-icons/pi";
 import { useAuth } from '../contexts/AuthContext';
 import { BsPersonCircle } from "react-icons/bs";
-
-
+import { getFirestore, doc, updateDoc } from 'firebase/firestore';
+import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { getAuth, updateEmail } from 'firebase/auth';
+import firebaseApp from '../firebaseConfig';
 
 const Profile = () => {
   const { userData } = useAuth();
@@ -19,6 +21,7 @@ const Profile = () => {
   const [phoneNumber, setPhoneNumber] = useState(userData.phoneNumber);
   const [password, setPassword] = useState('');
   const [avatar, setAvatar] = useState(userData.avatar);
+  const [newAvatar, setNewAvatar] = useState(null);
 
   const handleFirstNameChange = (e) => setFirstName(e.target.value);
   const handleLastNameChange = (e) => setLastName(e.target.value);
@@ -34,35 +37,68 @@ const Profile = () => {
   const handleAvatarChange = (event) => {
     const file = event.target.files[0];
     if (file) {
-      setAvatar(file);
+      setNewAvatar(file);
+      setAvatar(URL.createObjectURL(file));
     }
   };
+
+  const handleSaveChanges = async () => {
+    try {
+      const db = getFirestore(firebaseApp);
+      const auth = getAuth(firebaseApp);
+      const user = auth.currentUser;
+      const storage = getStorage(firebaseApp);
+      let avatarURL = avatar;
+
+      if (newAvatar) {
+        const storageRef = ref(storage, `avatars/${userData.id}/${newAvatar.name}`);
+        await uploadBytes(storageRef, newAvatar);
+        avatarURL = await getDownloadURL(storageRef);
+      }
+
+      if (user.email !== email) {
+        await updateEmail(user, email);
+      }
+
+      const userDocRef = doc(db, 'users', userData.id);
+      await updateDoc(userDocRef, {
+        firstName,
+        lastName,
+        email,
+        phoneNumber,
+        avatar: avatarURL
+      });
+
+      alert('Profile updated successfully');
+    } catch (error) {
+      console.error('Error updating profile:', error);
+      alert('Failed to update profile');
+    }
+  };
+
   return (
     <div>
-      <NavbarProfile name={fullname} image={userData.avatar} />
+      <NavbarProfile name={fullname} image={avatar} />
       <div className="container mt-5">
         <div className='row justify-content-between align-items-center'>
           <div className="col-6">
             <p className='fw-bolder display-5 mb-0'>Profil</p>
           </div>
           <div className="col-6 text-end">
-            <button className='btn bg-brown text-capitalize mb-0 text-white fw-bolder'>Enregistrer</button>
+            <button onClick={handleSaveChanges} className='btn bg-brown text-capitalize mb-0 text-white fw-bolder'>Enregistrer</button>
           </div>
         </div>
         <hr />
         <div className="row align-items-center">
           <div className="col-lg-2 text-center">
             <div className='circle-container mx-auto d-flex align-items-center justify-content-center'>
-              {userData.avatar && <img src={userData.avatar} className='circle-image' alt="" />}
-              {!userData.avatar && <BsPersonCircle size={120} color='#B55D51' />}
+              {avatar ? <img src={avatar} className='circle-image' alt="Avatar" /> : <BsPersonCircle size={120} color='#B55D51' />}
             </div>
             <p className='text-center text-dark fw-bolder mt-2'>{firstName} {lastName}</p>
           </div>
-
-
           <div className="col-lg-3 gx-3 d-flex justify-content-xl-evenly justify-content-center">
             <button onClick={handleButtonClick} className='btn bg-brown fw-semibold text-white mb-3 mx-3' >Modifier la photo</button>
-            <button onClick={handleButtonClick} className='btn fw-semibold mb-3 mx-3' style={{backgroundColor: '#EDEDED'}} >Supprimer</button>
+            <button onClick={() => setAvatar('')} className='btn fw-semibold mb-3 mx-3' style={{backgroundColor: '#EDEDED'}} >Supprimer</button>
           </div>
         </div>
 

@@ -16,7 +16,6 @@ const NavbarProfile = ({ name, image }) => {
             console.log("Erreur")
         });
     }
-
     return (
         <nav className="navbar navbar-expand-xl shadow-none navbar-before-scroll">
             <div className="container">
@@ -28,8 +27,8 @@ const NavbarProfile = ({ name, image }) => {
 
                     <div className="text-end">
                         <Link to="/user/profile" title={name}>
-                            {image && <span className='text-end mb-0 me-1'><img src={image} className='rounded-circle' style={{ width: "25%" }} alt="" /></span>}
-                            {!image && <span className='text-end mb-0 me-1'><BsPersonCircle size={50} color='#B55D51' /></span>}
+                            {image && <span className='text-end mb-0 me-1'><img src={image} className='rounded-circle avatar' style={{ width: "25%" }} alt="" /></span>}
+                            {!image && <span className='text-end mb-0 me-1'><BsPersonCircle size={50} color='#B55D51' className='avatar' /></span>}
                         </Link>
                         <button className="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
                             <span className="navbar-toggler-icon"></span>
@@ -64,8 +63,8 @@ const NavbarProfile = ({ name, image }) => {
                     <div className='d-xl-flex align-items-center'>
 
                         <Link to="/user/profile" title={name}>
-                            {image && <p className='text-end mb-0 mx-2 d-none d-xl-block'><img src={image} className='rounded-circle' style={{ width: "50%" }} alt="" /></p>}
-                            {!image && <p className='text-end mb-0 mx-2 d-none d-xl-block'><BsPersonCircle size={50} color='#B55D51' /></p>}
+                            {image && <p className='text-end mb-0 mx-2 d-none d-xl-block'><img src={image} className='rounded-circle avatar' style={{ width: "50%" }} alt="" /></p>}
+                            {!image && <p className='text-end mb-0 mx-2 d-none d-xl-block'><BsPersonCircle size={50} color='#B55D51' className='avatar' /></p>}
                         </Link>
                         <Link to={"/connexion"}><MDBBtn onClick={Logout} className='mx-1 fw-bold text-capitalize text-white' color='white' rippleColor='light' style={{ backgroundColor: '#B55D51' }} >Deconnexion</MDBBtn></Link>
                     </div>
