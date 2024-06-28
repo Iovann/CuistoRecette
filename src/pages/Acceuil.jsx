@@ -21,7 +21,7 @@ const Acceuil = () => {
         setRecipe(dataRecipe.slice(0, 6));
         setCategorie(dataCategorie.slice(0, 8));
     }, []);
-
+    console.log(userData)
     const fullname = `${userData.firstName} ${userData.lastName}`
     return (
         <>

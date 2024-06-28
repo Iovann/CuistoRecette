@@ -5,7 +5,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { MdOutlineArrowBackIosNew } from "react-icons/md";
 import Loading from '../components/Loading';
 import firebaseApp from '../firebaseConfig';
-import { getAuth, GoogleAuthProvider, signInWithPopup, createUserWithEmailAndPassword } from "firebase/auth";
+import { getAuth, GoogleAuthProvider, signInWithPopup, createUserWithEmailAndPassword, sendEmailVerification } from "firebase/auth";
 import { getFirestore, setDoc, doc } from "firebase/firestore";
 import DividerWithText from '../components/divider';
 
@@ -59,18 +59,16 @@ const Inscription = () => {
     setLoading(true);
     try {
       const auth = getAuth(firebaseApp);
-      const db = getFirestore(firebaseApp);
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
-      await setDoc(doc(db, "users", user.uid), {
-        firstName,
-        lastName,
-        email,
-        phoneNumber,
-        avatar
+
+      await sendEmailVerification(user);
+      alert('A verification email has been sent to your email address. Please verify your email to complete the registration.');
+
+      navigate('/verify-email', {
+        state: { firstName, lastName, email, phoneNumber, avatar, uid: user.uid }
       });
 
-      navigate('/user');
     } catch (error) {
       console.error("Error creating user:", error);
     } finally {
@@ -162,15 +160,15 @@ const Inscription = () => {
 
               <div className="d-flex justify-content-center">{loading && <Loading />}</div>
               <div className="">
-              <DividerWithText text="ou" />
-              <div className="row justify-content-center">
+                <DividerWithText text="ou" />
+                <div className="row justify-content-center">
                   <div className="col-12 text-center mx-auto d-flex justify-content-center">
                     <button
                       data-mdb-ripple-init
                       type="button"
                       className="btn rounded-pill btn-floating py-2 text-start d-flex align-items-center"
                       onClick={handleGoogleSignUp}
-                      style={{backgroundColor:"#EDEDED"}}
+                      style={{ backgroundColor: "#EDEDED" }}
                     >
                       <FcGoogle className='mx-2 ' size={30} />
                       <span className='text-capitalize'>S'inscrire <span className="text-lowercase">avec </span>Google</span>

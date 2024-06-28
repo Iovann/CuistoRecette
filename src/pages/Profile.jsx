@@ -8,7 +8,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { BsPersonCircle } from "react-icons/bs";
 import { getFirestore, doc, updateDoc } from 'firebase/firestore';
 import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
-import { getAuth, updateEmail } from 'firebase/auth';
+import { getAuth, updateEmail, sendEmailVerification } from 'firebase/auth';
 import firebaseApp from '../firebaseConfig';
 
 const Profile = () => {
@@ -19,7 +19,6 @@ const Profile = () => {
   const [lastName, setLastName] = useState(userData.lastName);
   const [email, setEmail] = useState(userData.email);
   const [phoneNumber, setPhoneNumber] = useState(userData.phoneNumber);
-  const [password, setPassword] = useState('');
   const [avatar, setAvatar] = useState(userData.avatar);
   const [newAvatar, setNewAvatar] = useState(null);
 
@@ -27,7 +26,6 @@ const Profile = () => {
   const handleLastNameChange = (e) => setLastName(e.target.value);
   const handleEmailChange = (e) => setEmail(e.target.value);
   const handlePhoneNumberChange = (e) => setPhoneNumber(e.target.value);
-  const handlePasswordChange = (e) => setPassword(e.target.value);
   const fullname = `${userData.firstName} ${userData.lastName}`
 
   const handleButtonClick = () => {
@@ -55,12 +53,8 @@ const Profile = () => {
         await uploadBytes(storageRef, newAvatar);
         avatarURL = await getDownloadURL(storageRef);
       }
-
-      if (user.email !== email) {
-        await updateEmail(user, email);
-      }
-
-      const userDocRef = doc(db, 'users', userData.id);
+      console.log(userData)
+      const userDocRef = doc(db, 'users', user.uid);
       await updateDoc(userDocRef, {
         firstName,
         lastName,
@@ -155,19 +149,7 @@ const Profile = () => {
               />
             </div>
           </div>
-          <div className="col-lg-5">
-            <div className="border-bottom border-2 border-brown">
-              <label className="form-label fw-semibold" htmlFor="password">Mot de passe</label>
-              <input
-                type="password"
-                id="password"
-                className="form-control out border-0"
-                value={password}
-                onChange={handlePasswordChange}
-              />
-            </div>
-            <p className='text-end fw-semibold brown'>Changer le mot de passe</p>
-          </div>
+          
           <div className="col-lg-5">
             <input
               type="file"
@@ -203,7 +185,6 @@ const Profile = () => {
           <div className="col-sm-6"><PiSignOutBold className='mx-3' size={30} />Se déconnecter</div>
           <div className="col-sm-6 mt-4 mt-sm-0 text-end brown fw-bolder">Supprimer le compte</div>
         </div>
-
       </div>
       <Footer />
     </div>
