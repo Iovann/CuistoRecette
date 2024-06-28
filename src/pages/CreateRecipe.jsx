@@ -118,38 +118,38 @@ const CreateRecipe = () => {
             formData.append('photo', dataURLtoFile(photo, 'recipe-photo.jpg'));
         }
 
-        try {
-            const token = localStorage.access;
-            const recipeResponse = await axios.post('http://127.0.0.1:8000/api/recipes/', formData, {
-                headers: {
-                    'Content-Type': 'multipart/form-data',
-                    'Authorization': `Bearer ${token}`
-                }
-            });
+    //     try {
+    //         const token = localStorage.access;
+    //         const recipeResponse = await axios.post('http://127.0.0.1:8000/api/recipes/', formData, {
+    //             headers: {
+    //                 'Content-Type': 'multipart/form-data',
+    //                 'Authorization': `Bearer ${token}`
+    //             }
+    //         });
 
-            const recipeId = recipeResponse.data.id;
-            const steps = items.map((item, index) => {
-                const stepFormData = new FormData();
-                stepFormData.append('recipe', recipeId);
-                stepFormData.append('step_number', index + 1);
-                stepFormData.append('description', item.instructions);
-                if (item.photo) {
-                    stepFormData.append('photo', dataURLtoFile(item.photo, `step-photo-${index}.jpg`));
-                }
-                return stepFormData;
-            });
+    //         const recipeId = recipeResponse.data.id;
+    //         const steps = items.map((item, index) => {
+    //             const stepFormData = new FormData();
+    //             stepFormData.append('recipe', recipeId);
+    //             stepFormData.append('step_number', index + 1);
+    //             stepFormData.append('description', item.instructions);
+    //             if (item.photo) {
+    //                 stepFormData.append('photo', dataURLtoFile(item.photo, `step-photo-${index}.jpg`));
+    //             }
+    //             return stepFormData;
+    //         });
 
-            for (const stepFormData of steps) {
-                // await axios.post('http://127.0.0.1:8000/api/steps/', stepFormData, {
-                //     headers: {
-                //         'Content-Type': 'multipart/form-data',
-                //         'Authorization': `Bearer ${token}`
-                //     }
-                // });
-            }
-        } catch (error) {
-            console.error('Error submitting recipe:', error.response ? error.response.data : error.message);
-        }
+    //         for (const stepFormData of steps) {
+    //             await axios.post('http://127.0.0.1:8000/api/steps/', stepFormData, {
+    //                 headers: {
+    //                     'Content-Type': 'multipart/form-data',
+    //                     'Authorization': `Bearer ${token}`
+    //                 }
+    //             });
+    //         }
+    //     } catch (error) {
+    //         console.error('Error submitting recipe:', error.response ? error.response.data : error.message);
+    //     }
     };
 
     const dataURLtoFile = (dataurl, filename) => {

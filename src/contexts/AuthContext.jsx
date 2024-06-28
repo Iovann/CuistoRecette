@@ -1,5 +1,6 @@
 import React, { useContext, useState, useEffect } from 'react';
 import { getAuth, onAuthStateChanged } from 'firebase/auth';
+import { getFirestore, doc, getDoc } from 'firebase/firestore';
 import firebaseApp from '../firebaseConfig';
 
 const AuthContext = React.createContext();
@@ -10,26 +11,32 @@ export const useAuth = () => {
 
 export const AuthProvider = ({ children }) => {
   const [currentUser, setCurrentUser] = useState(null);
+  const [userData, setUserData] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const auth = getAuth(firebaseApp);
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
+    const db = getFirestore(firebaseApp);
+
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+      setCurrentUser(user);
+
       if (user) {
-        const userData = user.providerData[0];
-        setCurrentUser({
-          uid: user.uid,
-          email: user.email,
-          displayName: user.displayName,
-          photoURL: user.photoURL,
-          phoneNumber: user.phoneNumber,
-          providerId: user.providerId,
-        });
-        console.log(auth)
-        console.log(currentUser)
+        try {
+          const docRef = doc(db, 'users', user.uid);
+          const userDoc = await getDoc(docRef);
+          if (userDoc.exists()) {
+            setUserData(userDoc.data());
+          } else {
+            console.log('No such document!');
+          }
+        } catch (error) {
+          console.error('Error fetching user data:', error);
+        }
       } else {
-        setCurrentUser(null);
+        setUserData(null);
       }
+
       setLoading(false);
       console.log('User status changed:', user ? 'Connected' : 'Disconnected');
     });
@@ -39,6 +46,7 @@ export const AuthProvider = ({ children }) => {
 
   const value = {
     currentUser,
+    userData,
   };
 
   return (

@@ -9,8 +9,6 @@ import { getAuth, GoogleAuthProvider, signInWithPopup, createUserWithEmailAndPas
 import { getFirestore, setDoc, doc } from "firebase/firestore";
 import DividerWithText from '../components/divider';
 
-
-
 const Inscription = () => {
   initMDB({ Input, Ripple });
 

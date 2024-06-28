@@ -4,123 +4,52 @@ import Footer from '../components/footer';
 import { CiBookmark } from "react-icons/ci";
 import { BiSolidCategory } from "react-icons/bi";
 import { PiSignOutBold } from "react-icons/pi";
+import { useAuth } from '../contexts/AuthContext';
+import { BsPersonCircle } from "react-icons/bs";
+
+
 
 const Profile = () => {
-  const [infos, setInfos] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const { userData } = useAuth();
 
-  const [firstName, setFirstName] = useState('');
-  const [lastName, setLastName] = useState('');
-  const [email, setEmail] = useState('');
-  const [phoneNumber, setPhoneNumber] = useState('');
+  const [firstName, setFirstName] = useState(userData.firstName);
+  const [lastName, setLastName] = useState(userData.lastName);
+  const [email, setEmail] = useState(userData.email);
+  const [phoneNumber, setPhoneNumber] = useState(userData.phoneNumber);
   const [password, setPassword] = useState('');
-  const [avatar, setAvatar] = useState(null); // Use null to handle file object
+  const [avatar, setAvatar] = useState(userData.avatar);
 
   const handleFirstNameChange = (e) => setFirstName(e.target.value);
   const handleLastNameChange = (e) => setLastName(e.target.value);
   const handleEmailChange = (e) => setEmail(e.target.value);
   const handlePhoneNumberChange = (e) => setPhoneNumber(e.target.value);
   const handlePasswordChange = (e) => setPassword(e.target.value);
-  const handleAvatarChange = (e) => setAvatar(e.target.files[0]); // Set file object directly
-
-  useEffect(() => {
-    const fetchProfile = async () => {
-      try {
-        const token = localStorage.getItem('access');
-        if (!token) {
-          throw new Error("Token not found");
-        }
-        // const response = await axios.get('http://localhost:8000/api/user/profile/', {
-        //   headers: {
-        //     'Authorization': `Bearer ${token}`
-        //   }
-        // });
-        setInfos(response.data);
-        setFirstName(response.data.user.first_name);
-        setLastName(response.data.user.last_name);
-        setEmail(response.data.user.email);
-        setPhoneNumber(response.data.phone_number);
-        setAvatar(response.data.avatar); // Assuming avatar is a File object from backend
-      } catch (error) {
-        setError('Erreur de récupération du profil');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchProfile();
-  }, []);
-
-  const handleSubmitAvatar = async () => {
-    try {
-      const token = localStorage.access;
-      if (!token) {
-        throw new Error("Token not found");
-      }
-
-      const formData = new FormData();
-      formData.append('user.first_name', firstName);
-      formData.append('user.last_name', lastName);
-      formData.append('user.email', email);
-      formData.append('phone_number', phoneNumber);
-      if (password) {
-        formData.append('user.password', password);
-      }
-      if (avatar) {
-        formData.append('avatar', avatar);
-      }
-
-      // const response = await axios.put('http://localhost:8000/api/user/profile/', formData, {
-      //   headers: {
-      //     'Authorization': `Bearer ${token}`,
-      //     'Content-Type': 'multipart/form-data',
-      //   }
-      // });
-      setInfos(response.data);
-      alert('Profil mis à jour avec succès');
-    } catch (error) {
-      setError('Erreur lors de la mise à jour du profil');
-    }
-  };
-
-  if (loading) {
-    return <div>Loading...</div>;
-  }
-
-  if (error) {
-    return <div>{error}</div>;
-  }
-
-  if (!infos) {
-    return <div>No profile information available</div>;
-  }
-
-  const isFormValid = firstName && lastName && email && phoneNumber;
-
+  const handleAvatarChange = (e) => setAvatar(e.target.files[0]);
+  const fullname = `${userData.firstName} ${userData.lastName}`
   return (
     <div>
-      <NavbarProfile name={infos.user.last_name} />
+      <NavbarProfile name={fullname} image={userData.avatar} />
       <div className="container mt-5">
         <div className='row justify-content-between align-items-center'>
           <div className="col-6">
             <p className='fw-bolder display-5 mb-0'>Profil</p>
           </div>
           <div className="col-6 text-end">
-            <button className='btn bg-brown text-capitalize mb-0 text-white fw-bolder' onClick={handleSubmitAvatar}>Enregistrer</button>
+            <button className='btn bg-brown text-capitalize mb-0 text-white fw-bolder'>Enregistrer</button>
           </div>
         </div>
         <hr />
         <div className="row">
-          <div className="col-lg-2 col-10 text-center">
-            <div className='circle-container mx-auto'>
-              <img src={avatar ? URL.createObjectURL(avatar) : "/public/assets/icons/avatar.jpg"} className='circle-image' alt="" />
+          <div className="col-lg-2 text-center">
+            <div className='circle-container mx-auto d-flex align-items-center justify-content-center'>
+              {userData.avatar && <img src={userData.avatar} className='circle-image' alt="" />}
+              {!userData.avatar && <BsPersonCircle size={120} color='#B55D51' />}
             </div>
-            <p className='text-center text-dark fw-bolder'>{firstName} {lastName}</p>
+            <p className='text-center text-dark fw-bolder mt-2'>{firstName} {lastName}</p>
           </div>
         </div>
 
-        <div className="row mt-5">
+        <div className="row mt-xl-5">
           <div className="col-lg-5">
             <div className="mb-4 border-bottom border-2 border-brown">
               <label className="form-label fw-semibold" htmlFor="nom">Nom</label>
@@ -187,15 +116,13 @@ const Profile = () => {
             <p className='text-end fw-semibold brown'>Changer le mot de passe</p>
           </div>
           <div className="col-lg-5">
-            <div className="mb-4 border-bottom border-2 border-brown">
-              <label className="form-label fw-semibold" htmlFor="photo">Photo de Profil</label>
               <input
                 type="file"
                 id="photo"
                 className="form-control out border-0"
                 onChange={handleAvatarChange}
+                style={{display:'none'}}
               />
-            </div>
           </div>
         </div>
 

@@ -14,7 +14,7 @@ const Acceuil = () => {
     const [card, setCard] = useState([]);
     const [recipe, setRecipe] = useState([]);
     const [categorie, setCategorie] = useState([]);
-    const { currentUser } = useAuth();
+    const { userData } = useAuth();
 
     useEffect(() => {
         setCard(dataCard.slice(0, 6));
@@ -22,12 +22,12 @@ const Acceuil = () => {
         setCategorie(dataCategorie.slice(0, 8));
     }, []);
 
-
+    const fullname = `${userData.firstName} ${userData.lastName}`
     return (
         <>
             <div id=''>
-                <NavbarProfile name={"Iovann ATCHO"} />
-                <HeroAcceuil infos={'Iovann'} />
+                <NavbarProfile name={fullname} image={userData.avatar} />
+                <HeroAcceuil infos={userData.lastName} />
             </div>
             <Share />
             <div className="container py-5">
@@ -45,13 +45,6 @@ const Acceuil = () => {
                 <p className='brown fs-5 fw-bold text-end pb-5 pt-0'>Voir plus</p>
                 <Row_card card={recipe} />
             </div>
-            <h1>User Profile</h1>
-            <p><strong>UID:</strong> {currentUser.uid}</p>
-            <p><strong>Email:</strong> {currentUser.email}</p>
-            <p><strong>Display Name:</strong> {currentUser.displayName}</p>
-            <p><strong>Phone Number:</strong> {currentUser.phoneNumber}</p>
-            <p><strong>Photo URL:</strong> <img src={currentUser.photoURL} alt="Profile" /></p>
-            <p><strong>Provider ID:</strong> {currentUser.providerId}</p>
             <div className="container py-5">
                 <h1>Categories Populaire</h1>
                 <p className='brown fs-5 fw-bold text-end pb-5 pt-0'>Voir plus</p>

@@ -197,7 +197,6 @@ const Recipe = () => {
         <Commentaire />
         <Commentaire />
 
-        <ProtectedRoute>
           <div className="row">
             <p className='fw-bold fs-1 py-3'>Évaluez cette recette et partagez votre avis</p>
             <div class="mb-3 col-lg-8">
@@ -208,7 +207,6 @@ const Recipe = () => {
               </p>
             </div>
           </div>
-        </ProtectedRoute>
       </div>
       <Footer />
     </div>

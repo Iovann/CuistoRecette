@@ -1,53 +1,23 @@
-import React, { useEffect, useState } from 'react';
-import { collection, getDocs } from 'firebase/firestore';
-import { getFirestore } from 'firebase/firestore';
-import firebaseApp from '../firebaseConfig'; // Assurez-vous d'avoir exporté `db` depuis votre fichier de configuration Firebase
+import React from 'react';
+import { useAuth } from '../contexts/AuthContext';
 
-const UsersList = () => {
-  const [users, setUsers] = useState([]);
-  const [loading, setLoading] = useState(true);
+const UserProfile = () => {
+  const { userData } = useAuth();
 
-  useEffect(() => {
-    const fetchUsers = async () => {
-      try {
-        const db = getFirestore(firebaseApp);
-        const querySnapshot = await getDocs(collection(db, 'users'));
-        const usersData = querySnapshot.docs.map(doc => ({
-          id: doc.id,
-          ...doc.data()
-        }));
-        setUsers(usersData);
-        setLoading(false);
-      } catch (error) {
-        console.error('Error fetching users:', error);
-        setLoading(false);
-      }
-    };
-
-    fetchUsers();
-  }, []);
-
-  if (loading) {
-    return <p>Loading...</p>;
+  if (!userData) {
+    return <p>No user data found</p>;
   }
 
   return (
     <div>
-      <h1>Users List</h1>
-      <ul>
-        {users.map(user => (
-          <li key={user.id}>
-            <p><strong>ID:</strong> {user.id}</p>
-            <p><strong>Avatar:</strong> {user.avatar || 'N/A'}</p>
-            <p><strong>Email:</strong> {user.email}</p>
-            <p><strong>First Name:</strong> {user.firstName}</p>
-            <p><strong>Last Name:</strong> {user.lastName}</p>
-            <p><strong>Phone Number:</strong> {user.phoneNumber}</p>
-          </li>
-        ))}
-      </ul>
+      <h1>User Profile</h1>
+      <p><strong>Avatar:</strong> {userData.avatar || 'N/A'}</p>
+      <p><strong>Email:</strong> {userData.email}</p>
+      <p><strong>First Name:</strong> {userData.firstName}</p>
+      <p><strong>Last Name:</strong> {userData.lastName}</p>
+      <p><strong>Phone Number:</strong> {userData.phoneNumber}</p>
     </div>
   );
 };
 
-export default UsersList;
+export default UserProfile;
