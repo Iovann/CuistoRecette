@@ -8,7 +8,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { BsPersonCircle } from "react-icons/bs";
 import { getFirestore, doc, updateDoc } from 'firebase/firestore';
 import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
-import { getAuth, updateEmail, sendEmailVerification } from 'firebase/auth';
+import { getAuth, updateEmail, sendEmailVerification, reauthenticateWithCredential, EmailAuthProvider } from 'firebase/auth';
 import firebaseApp from '../firebaseConfig';
 
 const Profile = () => {
@@ -40,6 +40,35 @@ const Profile = () => {
     }
   };
 
+
+  const auth = getAuth();
+  const user = auth.currentUser;
+
+  const promptForCredentials = () => {
+    return prompt('Please enter your password to proceed:');
+  };
+
+  const handleUpdateEmail = async (newEmail, password) => {
+    try {
+      const credential = EmailAuthProvider.credential(user.email, password);
+      await reauthenticateWithCredential(user, credential);
+
+      // Une fois l'utilisateur ré-authentifié avec succès, mettre à jour l'email
+      await updateEmail(user, newEmail);
+
+      // Mettre à jour l'email localement dans l'interface utilisateur
+      setEmail(newEmail);
+
+      // Informer l'utilisateur que l'email a été mis à jour avec succès
+      alert('Your email has been updated successfully.');
+    } catch (error) {
+      // Gérer les erreurs de ré-authentification ou de mise à jour de l'email
+      console.error('Error updating email:', error);
+      alert('Failed to update email. Please check your password and try again.');
+    }
+  };
+
+
   const handleSaveChanges = async () => {
     try {
       const db = getFirestore(firebaseApp);
@@ -48,12 +77,20 @@ const Profile = () => {
       const storage = getStorage(firebaseApp);
       let avatarURL = avatar;
 
+      const newEmail = prompt('Enter your new email:');
+      const password = promptForCredentials();
+
+      if (newEmail && password) {
+        handleUpdateEmail(newEmail, password);
+      }
+
       if (newAvatar) {
         const storageRef = ref(storage, `avatars/${userData.id}/${newAvatar.name}`);
         await uploadBytes(storageRef, newAvatar);
         avatarURL = await getDownloadURL(storageRef);
       }
-      console.log(userData)
+
+      // Mettre à jour les données utilisateur dans Firestore
       const userDocRef = doc(db, 'users', user.uid);
       await updateDoc(userDocRef, {
         firstName,
@@ -92,7 +129,7 @@ const Profile = () => {
           </div>
           <div className="col-lg-3 gx-3 d-flex justify-content-xl-evenly justify-content-center">
             <button onClick={handleButtonClick} className='btn bg-brown fw-semibold text-white mb-3 mx-3' >Modifier la photo</button>
-            <button onClick={() => setAvatar('')} className='btn fw-semibold mb-3 mx-3' style={{backgroundColor: '#EDEDED'}} >Supprimer</button>
+            <button onClick={() => setAvatar('')} className='btn fw-semibold mb-3 mx-3' style={{ backgroundColor: '#EDEDED' }} >Supprimer</button>
           </div>
         </div>
 
@@ -149,7 +186,7 @@ const Profile = () => {
               />
             </div>
           </div>
-          
+
           <div className="col-lg-5">
             <input
               type="file"

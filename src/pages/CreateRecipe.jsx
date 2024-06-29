@@ -5,6 +5,13 @@ import { MdDelete } from "react-icons/md";
 import { IoIosAddCircleOutline } from "react-icons/io";
 import { MdOutlineAddAPhoto } from "react-icons/md";
 import { Link } from 'react-router-dom';
+import firebaseApp from '../firebaseConfig';
+import { getFirestore, collection, addDoc, doc, setDoc } from "firebase/firestore";
+import { getStorage, ref, uploadString, getDownloadURL } from "firebase/storage";
+import { getAuth } from "firebase/auth";
+import { useAuth } from '../contexts/AuthContext';
+
+
 
 const CreateRecipe = () => {
     const [imageUrl, setImageUrl] = useState(null);
@@ -30,6 +37,7 @@ const CreateRecipe = () => {
         category: false,
         photo: false
     });
+    const { userData } = useAuth();
 
     const handleFileChange = (event) => {
         const file = event.target.files[0];
@@ -100,56 +108,86 @@ const CreateRecipe = () => {
     const handleSubmit = async (event) => {
         event.preventDefault();
 
-        // Check for any form errors
-        const hasErrors = Object.values(formErrors).some((error) => error);
+        const db = getFirestore(firebaseApp);
+        const storage = getStorage(firebaseApp);
+        const auth = getAuth(firebaseApp);
+        const user = auth.currentUser;
+
+        if (!user) {
+            alert('Vous devez être connecté pour soumettre une recette.');
+            return;
+        }
+
+        const newFormErrors = {
+            title: title.trim() === '',
+            description: description.trim() === '',
+            ingredients: ingredients.some(ingredient => ingredient.trim() === ''),
+            servings: servings.trim() === '',
+            prepTime: prepTime.trim() === '',
+            cookTime: cookTime.trim() === '',
+            cuisine: cuisine.trim() === '',
+            category: category.trim() === '',
+            photo: photo === null,
+            instructions: items.some(item => item.instructions.trim() === '')
+        };
+
+        setFormErrors(newFormErrors);
+
+        const hasErrors = Object.values(newFormErrors).some(error => error);
         if (hasErrors) {
             alert('Veuillez remplir tous les champs obligatoires correctement.');
             return;
         }
 
-        // Proceed with form submission logic
-        const formData = new FormData();
-        formData.append('title', title);
-        formData.append('ingredients', ingredients.join(','));
-        formData.append('prep_time', prepTime);
-        formData.append('cook_time', cookTime);
-        formData.append('servings', servings);
-        if (photo) {
-            formData.append('photo', dataURLtoFile(photo, 'recipe-photo.jpg'));
+        try {
+            const recipeRef = doc(collection(db, 'recipes'));
+            const recipeId = recipeRef.id;
+
+            let photoUrl = null;
+            if (photo) {
+                const photoRef = ref(storage, `recipes/${recipeId}/mainPhoto.jpg`);
+                await uploadString(photoRef, photo, 'data_url');
+                photoUrl = await getDownloadURL(photoRef);
+            }
+
+            const steps = await Promise.all(items.map(async (item, index) => {
+                let stepPhotoUrl = null;
+                if (item.photo) {
+                    const stepPhotoRef = ref(storage, `recipes/${recipeId}/steps/step${index + 1}.jpg`);
+                    await uploadString(stepPhotoRef, item.photo, 'data_url');
+                    stepPhotoUrl = await getDownloadURL(stepPhotoRef);
+                }
+                return {
+                    instructions: item.instructions,
+                    photo: stepPhotoUrl
+                };
+            }));
+
+            const fullname = `${userData.firstName} ${userData.lastName}`
+            const userInfo = {
+                userId: user.uid,
+                name: fullname,
+                photoURL: userData.avatar
+            };
+
+            await setDoc(recipeRef, {
+                title,
+                description,
+                ingredients,
+                prepTime,
+                cookTime,
+                servings,
+                cuisine,
+                category,
+                photo: photoUrl,
+                steps,
+                createdBy: userInfo,
+            });
+            alert('Recette enregistrée avec succès');
+        } catch (error) {
+            console.error('Erreur lors de l\'enregistrement de la recette:', error);
+            alert('Erreur lors de l\'enregistrement de la recette');
         }
-
-    //     try {
-    //         const token = localStorage.access;
-    //         const recipeResponse = await axios.post('http://127.0.0.1:8000/api/recipes/', formData, {
-    //             headers: {
-    //                 'Content-Type': 'multipart/form-data',
-    //                 'Authorization': `Bearer ${token}`
-    //             }
-    //         });
-
-    //         const recipeId = recipeResponse.data.id;
-    //         const steps = items.map((item, index) => {
-    //             const stepFormData = new FormData();
-    //             stepFormData.append('recipe', recipeId);
-    //             stepFormData.append('step_number', index + 1);
-    //             stepFormData.append('description', item.instructions);
-    //             if (item.photo) {
-    //                 stepFormData.append('photo', dataURLtoFile(item.photo, `step-photo-${index}.jpg`));
-    //             }
-    //             return stepFormData;
-    //         });
-
-    //         for (const stepFormData of steps) {
-    //             await axios.post('http://127.0.0.1:8000/api/steps/', stepFormData, {
-    //                 headers: {
-    //                     'Content-Type': 'multipart/form-data',
-    //                     'Authorization': `Bearer ${token}`
-    //                 }
-    //             });
-    //         }
-    //     } catch (error) {
-    //         console.error('Error submitting recipe:', error.response ? error.response.data : error.message);
-    //     }
     };
 
     const dataURLtoFile = (dataurl, filename) => {
@@ -243,9 +281,9 @@ const CreateRecipe = () => {
                                     placeholder='Décrivez la recette'
                                     required
                                 ></textarea>
-                                <p className="text-end mb-3"><small className="text-muted">{description.length}/250</small></p>
                                 {formErrors.description && <div className="invalid-feedback">Veuillez entrer une description valide pour la recette.</div>}
                             </div>
+                            <p className="text-end mb-3"><small className="text-muted">{description.length}/250</small></p>
                         </div>
 
                         <h3 className='fw-bold'>Ingrédients:</h3>
