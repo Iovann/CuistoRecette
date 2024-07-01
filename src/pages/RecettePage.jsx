@@ -6,6 +6,8 @@ import firebaseApp from '../firebaseConfig';
 import Row_card from '../components/row_card';
 import { FaSearch } from "react-icons/fa";
 import { Link } from 'react-router-dom';
+import { getAuth } from 'firebase/auth';
+
 
 const RecettePage = () => {
     const { userData } = useAuth();
@@ -22,14 +24,42 @@ const RecettePage = () => {
     }, [activeTab]);
 
     const fetchRecipes = async () => {
+
         try {
+            const db = getFirestore(firebaseApp);
+            const auth = getAuth();
+            const user = auth.currentUser;
+
+            if (!user) {
+                throw new Error('User not authenticated');
+            }
+
             let q = collection(db, "recipes");
+
             if (activeTab === 'Favoris') {
-                q = query(q, where("favorite", "==", true));
+                // Récupérer les favoris de l'utilisateur
+                const userDocRef = collection(db, "users");
+                const userDocSnapshot = await getDocs(query(userDocRef, where("email", "==", user.email)));
+                console.log(userDocSnapshot.empty)
+
+                console.log(user.email)
+
+                if (!userDocSnapshot.empty) {
+                    const userData = userDocSnapshot.docs[0].data();
+                    const userFavorites = userData.favorites || [];
+
+                    // Créer une requête pour récupérer les recettes des favoris de l'utilisateur
+                    q = query(q, where("__name__", "in", userFavorites));
+                } else {
+                    console.log("No favorites found for this user.");
+                    return;
+                }
             } else if (activeTab === 'Les mieux notées') {
+                // Requête pour récupérer les recettes les mieux notées
                 q = query(q, orderBy("rating", "desc"));
             }
 
+            // Exécuter la requête et mettre à jour l'état des recettes
             const querySnapshot = await getDocs(q);
             const recipeList = querySnapshot.docs.map(doc => ({
                 id: doc.id,
