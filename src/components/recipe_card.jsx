@@ -1,11 +1,24 @@
 import { ImFire } from "react-icons/im";
-import React from 'react'
-import Star from './star'
-const Recipe_card = ({ image, count, title, avatar, name, cals }) => {
-    if (count > 5) {count = 5.0; count = count.toFixed(1)}
-    else {count = count.toFixed(1)}
+import React from 'react';
+import { useNavigate } from 'react-router-dom';
+import Star from './star';
+
+const Recipe_card = ({ id, image, count, title, avatar, name, cals }) => {
+    const navigate = useNavigate();
+
+    if (count > 5) {
+        count = 5.0;
+        count = count.toFixed(1);
+    } else {
+        count = count.toFixed(1);
+    }
+
+    const handleCardClick = () => {
+        navigate(`/recette/${id}`);
+    };
+
     return (
-        <div className="card card">
+        <div className="card card" onClick={handleCardClick} style={{ cursor: 'pointer' }}>
             <img src={image} className="card-img-top" alt="..." />
             <div className="card-body">
                 <div className="d-flex justify-content-between align-items-center">
@@ -19,7 +32,7 @@ const Recipe_card = ({ image, count, title, avatar, name, cals }) => {
                 </div>
             </div>
         </div>
-    )
-}
+    );
+};
 
-export default Recipe_card
+export default Recipe_card;

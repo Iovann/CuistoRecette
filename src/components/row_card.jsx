@@ -13,7 +13,7 @@ const Row_card = ({card}) => {
             <div className="row gx-5 justify-content-between">
                 {card.map((item, index) => (
                     <div key={index} className="col-lg-4 col-md-6 my-3">
-                        <Recipe_card image={item.photo} title={item.title} name={item.createdBy.name} avatar={item.createdBy.photoURL} count={5} cals={item.cals}/>
+                        <Recipe_card id={item.id} image={item.photo} title={item.title} name={item.createdBy.name} avatar={item.createdBy.photoURL} count={5} cals={item.cals}/>
                     </div>
                 ))}
             </div>

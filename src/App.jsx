@@ -2,7 +2,6 @@ import React from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from './contexts/AuthContext';
 import VerifyEmail from './pages/verifyEmail';
-
 import Home from './pages/home';
 import Inscription from './pages/inscription';
 import Connexion from './pages/connexion';
@@ -22,10 +21,8 @@ function App() {
           <Route path="/" element={<Home />} />
           <Route path="/inscription" element={<Inscription />} />
           <Route path="/connexion" element={<Connexion />} />
-          <Route path="/recette" element={<Recipe />} />
+          <Route path="/recette/:id" element={<Recipe />} />
           <Route path="/verify-email" element={<VerifyEmail />} />
-
-
           <Route path="/user" element={<ProtectedRoute element={Acceuil} />} />
           <Route path="/user/profile" element={<ProtectedRoute element={Profile} />} />
           <Route path="/user/add" element={<ProtectedRoute element={CreateRecipe} />} />
