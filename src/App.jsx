@@ -11,7 +11,7 @@ import Profile from './pages/Profile';
 import CreateRecipe from './pages/CreateRecipe';
 import Recipe from './pages/Recipe';
 import ProtectedRoute from './components/ProtectedRoute';
-import UsersList from './pages/affiche';
+import RecettePage from './pages/RecettePage';
 
 function App() {
   return (
@@ -21,13 +21,12 @@ function App() {
           <Route path="/" element={<Home />} />
           <Route path="/inscription" element={<Inscription />} />
           <Route path="/connexion" element={<Connexion />} />
+          <Route path="/recette" element={<RecettePage />} />
           <Route path="/recette/:id" element={<Recipe />} />
           <Route path="/verify-email" element={<VerifyEmail />} />
           <Route path="/user" element={<ProtectedRoute element={Acceuil} />} />
           <Route path="/user/profile" element={<ProtectedRoute element={Profile} />} />
           <Route path="/user/add" element={<ProtectedRoute element={CreateRecipe} />} />
-          <Route path="/user/list" element={<ProtectedRoute element={UsersList} />} />
-
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>

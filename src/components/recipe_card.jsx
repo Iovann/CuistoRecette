@@ -6,11 +6,13 @@ import Star from './star';
 const Recipe_card = ({ id, image, count, title, avatar, name, cals }) => {
     const navigate = useNavigate();
 
-    if (count > 5) {
-        count = 5.0;
-        count = count.toFixed(1);
-    } else {
-        count = count.toFixed(1);
+    if (count) {
+        if (count > 5) {
+            count = 5.0;
+            count = count.toFixed(1);
+        } else {
+            count = count.toFixed(1);
+        }
     }
 
     const handleCardClick = () => {
@@ -19,7 +21,7 @@ const Recipe_card = ({ id, image, count, title, avatar, name, cals }) => {
 
     return (
         <div className="card card" onClick={handleCardClick} style={{ cursor: 'pointer' }}>
-            <img src={image} className="card-img-top" alt="..." />
+            <img src={image} className="card-img-top card-image" alt={image} />
             <div className="card-body">
                 <div className="d-flex justify-content-between align-items-center">
                     <Star count={count} />
@@ -28,7 +30,7 @@ const Recipe_card = ({ id, image, count, title, avatar, name, cals }) => {
                 <h5 className="card-title mt-2">{title}</h5>
                 <div className="card-text d-flex justify-content-between align-items-center">
                     <span className='fw-semibold'><img src={avatar} className='rounded-circle img-fluid me-3 avatar' style={{ width: '20%' }} alt="" />{name}</span>
-                    <span className='p-1 border border-1 rounded-2 border-warning cals text-center d-none d-sm-inline'> <ImFire color="red" className="mb-1" /> <span className="">{cals} cals</span></span>
+                    {/* <span className='p-1 border border-1 rounded-2 border-warning cals text-center d-none d-lg-inline'> <ImFire color="red" className="mb-1" /> <span className="">{cals} cals</span></span> */}
                 </div>
             </div>
         </div>

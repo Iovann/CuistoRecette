@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react'
-import NavbarProfile from '../components/NavbarProfile'
-import Footer from '../components/footer'
+import React, { useState, useEffect } from 'react';
+import NavbarProfile from '../components/NavbarProfile';
+import Footer from '../components/footer';
 import { RiShareBoxFill } from "react-icons/ri";
 import { CiBookmark } from "react-icons/ci";
 import { FaBookmark } from "react-icons/fa";
@@ -10,8 +10,10 @@ import Commentaire from '../components/Commentaire';
 import { FaTelegramPlane } from "react-icons/fa";
 import { Rating } from 'primereact/rating';
 import { useParams } from 'react-router-dom';
-import { doc, getDoc, getFirestore } from 'firebase/firestore';
+import { doc, getDoc, getFirestore, updateDoc, arrayUnion, collection, addDoc, query, where, getDocs } from 'firebase/firestore';
 import firebaseApp from '../firebaseConfig';
+import { useAuth } from '../contexts/AuthContext';
+import { getAuth } from 'firebase/auth';
 
 const Recipe = () => {
   const [value, setValue] = useState(0);
@@ -20,6 +22,10 @@ const Recipe = () => {
   const [ingredients, setIngredients] = useState([]);
   const { id } = useParams();
   const db = getFirestore(firebaseApp);
+  const { userData } = useAuth();
+  const [comment, setComment] = useState("");
+  const [comments, setComments] = useState([]);
+
 
   useEffect(() => {
     const fetchRecipe = async () => {
@@ -37,7 +43,22 @@ const Recipe = () => {
       }
     };
 
+    const fetchComments = async () => {
+      try {
+        const commentsRef = collection(db, "rating");
+        const q = query(commentsRef, where("recipeId", "==", id));
+        const querySnapshot = await getDocs(q);
+
+        const commentsList = querySnapshot.docs.map((doc) => doc.data());
+        setComments(commentsList);
+      } catch (error) {
+        console.error("Error fetching comments:", error);
+      }
+    };
+
+
     fetchRecipe();
+    fetchComments();
   }, [id]);
 
   useEffect(() => {
@@ -48,8 +69,61 @@ const Recipe = () => {
     }
   }, [recipe]);
 
+  console.log(comments)
   const addBook = () => {
     setFavorite(!favorite);
+  };
+
+  const handleChangeComment = (e) => {
+    setComment(e.target.value);
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    const auth = getAuth(firebaseApp);
+
+    if (value === 0) {
+      alert("Veuillez noter la recette avant d'envoyer votre commentaire.");
+      return;
+    }
+
+    try {
+      const ratingRef = collection(db, "rating");
+      const fullname = `${userData.firstName} ${userData.lastName}`
+      await addDoc(ratingRef, {
+        comment: comment,
+        rating: value,
+        recipeId: id,
+        userId: auth.currentUser.uid,
+        userName: fullname,
+        photo: userData.avatar,
+      });
+      const q = query(ratingRef, where("recipeId", "==", id));
+      const querySnapshot = await getDocs(q);
+
+      let totalRating = 0;
+      let ratingCount = 0;
+
+      querySnapshot.forEach((doc) => {
+        totalRating += doc.data().rating;
+        ratingCount++;
+      });
+
+      const newAverageRating = totalRating / ratingCount;
+
+      // Mettre à jour la note moyenne de la recette
+      const recipeRef = doc(db, "recipes", id);
+      await updateDoc(recipeRef, {
+        rating: newAverageRating,
+      });
+
+      alert("Votre commentaire et note ont été ajoutés avec succès !");
+      setComment("");
+      setValue(0);
+    } catch (error) {
+      console.error("Error submitting rating:", error);
+      alert("Une erreur est survenue lors de l'envoi de votre commentaire. Veuillez réessayer.");
+    }
   };
 
   const handleCheckboxChange = (index) => {
@@ -62,9 +136,10 @@ const Recipe = () => {
     return <div>Loading...</div>;
   }
 
+  const fullname = `${userData.firstName} ${userData.lastName}`;
   return (
     <div>
-      <NavbarProfile />
+      <NavbarProfile name={fullname} image={userData.avatar} />
       <div className="container">
         <p className="text-end">
           <RiShareBoxFill className='mx-2' size={25} />
@@ -82,9 +157,9 @@ const Recipe = () => {
           </span>
           <span className='fw-bold'>{recipe.createdBy.name}</span>
           <span className='mx-4'>
-            <FaRegMessage /><span className='mx-2'>25</span>
+            <FaRegMessage /><span className='mx-2'>{comments.length}</span>
           </span>
-          <Star count={5} />
+          <Star count={recipe.rating} />
         </div>
         <hr />
 
@@ -164,7 +239,7 @@ const Recipe = () => {
                           <span className="me-2 px-2 py-1 rounded-circle bg-brown text-white fw-bolder fw-bold">{index + 1}</span>
                         </div>
                         <div className="col-lg-10">
-                          <span>{instruction.instructions}</span>
+                          <span className=''>{instruction.instructions}</span>
                         </div>
                       </div>
                     </div>
@@ -176,27 +251,26 @@ const Recipe = () => {
         </div>
         <hr className='border border-5 border-danger my-5' />
 
-        <p className='fw-bold display-5 py-5'>Commentaires <span className='fs-6'>(25)</span></p>
-        <Commentaire />
-        <Commentaire />
-        <Commentaire />
-        <Commentaire />
-        <Commentaire />
-
+        <p className='fw-bold display-5 pt-5 pb-2'>Commentaires <span className='fs-6'>({comments.length})</span></p>
+        {
+          comments.map((item, index) => (
+            <Commentaire photo={item.photo} text={item.comment} fullname={item.userName}/>
+          ))
+        }
         <div className="row">
           <p className='fw-bold fs-1 py-3'>Évaluez cette recette et partagez votre avis</p>
           <div className="mb-3 col-lg-8">
             <p className='text-start'><Rating value={value} onChange={(e) => setValue(e.value)} cancel={false} /></p>
-            <textarea className="form-control bg-secondary-subtle" rows="6"></textarea>
+            <textarea className="form-control bg-secondary-subtle" onChange={handleChangeComment} rows="6"></textarea>
             <p className='text-end mt-1'>
-              <button className='btn bg-brown text-white fw-bold text-capitalize'> <FaTelegramPlane className='me-2' size={20} />Envoyer</button>
+              <button className='btn bg-brown text-white fw-bold text-capitalize' onClick={handleSubmit}> <FaTelegramPlane className='me-2' size={20} />Envoyer</button>
             </p>
           </div>
         </div>
       </div>
       <Footer />
     </div>
-  )
-}
+  );
+};
 
 export default Recipe;

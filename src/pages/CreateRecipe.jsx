@@ -11,8 +11,6 @@ import { getStorage, ref, uploadString, getDownloadURL } from "firebase/storage"
 import { getAuth } from "firebase/auth";
 import { useAuth } from '../contexts/AuthContext';
 
-
-
 const CreateRecipe = () => {
     const [imageUrl, setImageUrl] = useState(null);
     const [description, setDescription] = useState('');
@@ -229,10 +227,11 @@ const CreateRecipe = () => {
         setItems(newItems);
         setFormErrors({ ...formErrors, instructions: event.target.value.trim() === '' });
     };
+    const fullname = `${userData.firstName} ${userData.lastName}`
 
     return (
         <>
-            <NavbarProfile />
+            <NavbarProfile name={fullname} image={userData.avatar} />
             <div className="container">
                 <hr />
                 <div className='row justify-content-between align-items-center'>

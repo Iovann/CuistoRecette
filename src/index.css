@@ -137,6 +137,11 @@ hr {
   color: #000;
 }
 
+.card-image{
+  width: auto;
+  height: 250px;
+}
+
 
 @keyframes spin {
   0% {

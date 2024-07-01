@@ -41,22 +41,22 @@ const NavbarProfile = ({ name, image }) => {
                         <span className='fw-bolder'>Cuisto<span style={{ color: "#974344" }}>Recettes</span> </span>
                     </span>
                 </div>
-                <div className="collapse navbar-collapse d-xl-flex justify-content-evenly" id="navbarSupportedContent">
-                    <ul className="navbar-nav mb-2 mb-lg-0 fw-bold">
+                <div className="collapse navbar-collapse d-xl-flex justify-content-between" id="navbarSupportedContent">
+                    <ul className="navbar-nav mb-2 mb-lg-0 fw-bold mx-auto">
                         <li className="nav-item mx-1">
                             <Link to="/user" className="nav-link active" aria-current="page" href="#">Acceuil</Link>
                         </li>
                         <li className="nav-item mx-1">
-                            <Link to="/" className="nav-link" href="#">Recette</Link>
+                            <Link to="/recette" className="nav-link" href="#">Recette</Link>
                         </li>
                         <li className="nav-item mx-1">
                             <Link to="/user/add" className="nav-link">Ajouter une Recette</Link>
                         </li>
                         <li className="nav-item mx-1">
-                            <Link to="/" className="nav-link">Blog</Link>
+                            <Link to="" className="nav-link">Blog</Link>
                         </li>
                         <li className="nav-item mx-1">
-                            <Link to="/" className="nav-link">A propos</Link>
+                            <Link to="" className="nav-link">A propos</Link>
                         </li>
                     </ul>
 
