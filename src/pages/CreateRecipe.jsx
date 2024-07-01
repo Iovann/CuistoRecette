@@ -227,7 +227,6 @@ const CreateRecipe = () => {
         setItems(newItems);
         setFormErrors({ ...formErrors, instructions: event.target.value.trim() === '' });
     };
-    const fullname = `${userData.firstName} ${userData.lastName}`
 
     return (
         <>

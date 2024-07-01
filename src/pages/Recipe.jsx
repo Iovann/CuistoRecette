@@ -10,14 +10,14 @@ import Commentaire from '../components/Commentaire';
 import { FaTelegramPlane } from "react-icons/fa";
 import { Rating } from 'primereact/rating';
 import { useParams } from 'react-router-dom';
-import { doc, getDoc, getFirestore, updateDoc, arrayUnion, collection, addDoc, query, where, getDocs } from 'firebase/firestore';
+import { doc, getDoc, getFirestore, updateDoc, arrayUnion, arrayRemove, collection, addDoc, query, where, getDocs } from 'firebase/firestore';
 import firebaseApp from '../firebaseConfig';
 import { useAuth } from '../contexts/AuthContext';
 import { getAuth } from 'firebase/auth';
 
 const Recipe = () => {
   const [value, setValue] = useState(0);
-  const [favorite, setFavorite] = useState(true);
+  const [favorite, setFavorite] = useState(false);
   const [recipe, setRecipe] = useState(null);
   const [ingredients, setIngredients] = useState([]);
   const { id } = useParams();
@@ -25,7 +25,7 @@ const Recipe = () => {
   const { userData } = useAuth();
   const [comment, setComment] = useState("");
   const [comments, setComments] = useState([]);
-
+  const auth = getAuth(firebaseApp);
 
   useEffect(() => {
     const fetchRecipe = async () => {
@@ -56,10 +56,25 @@ const Recipe = () => {
       }
     };
 
+    const checkIfFavorite = async () => {
+      try {
+        const userRef = doc(db, "users", auth.currentUser.uid);
+        const userSnap = await getDoc(userRef);
+
+        if (userSnap.exists() && userSnap.data().favorites.includes(id)) {
+          setFavorite(true);
+        }
+      } catch (error) {
+        console.error("Error checking if favorite:", error);
+      }
+    };
 
     fetchRecipe();
     fetchComments();
-  }, [id]);
+    checkIfFavorite();
+  }, [id, auth.currentUser.uid, db]);
+
+  console.log(auth.currentUser.uid)
 
   useEffect(() => {
     if (recipe) {
@@ -69,9 +84,24 @@ const Recipe = () => {
     }
   }, [recipe]);
 
-  console.log(comments)
-  const addBook = () => {
-    setFavorite(!favorite);
+  const addBook = async () => {
+    try {
+      const userRef = doc(db, "users", auth.currentUser.uid);
+
+      if (favorite) {
+        await updateDoc(userRef, {
+          favorites: arrayRemove(id),
+        });
+      } else {
+        await updateDoc(userRef, {
+          favorites: arrayUnion(id),
+        });
+      }
+
+      setFavorite(!favorite);
+    } catch (error) {
+      console.error("Error updating favorite:", error);
+    }
   };
 
   const handleChangeComment = (e) => {
@@ -111,7 +141,6 @@ const Recipe = () => {
 
       const newAverageRating = totalRating / ratingCount;
 
-      // Mettre à jour la note moyenne de la recette
       const recipeRef = doc(db, "recipes", id);
       await updateDoc(recipeRef, {
         rating: newAverageRating,
@@ -120,6 +149,7 @@ const Recipe = () => {
       alert("Votre commentaire et note ont été ajoutés avec succès !");
       setComment("");
       setValue(0);
+      fetchComments();
     } catch (error) {
       console.error("Error submitting rating:", error);
       alert("Une erreur est survenue lors de l'envoi de votre commentaire. Veuillez réessayer.");
@@ -165,9 +195,7 @@ const Recipe = () => {
 
         <p className='fw-semibold text-black'>{recipe.description}</p>
 
-        <div className="row">
-          <img src={recipe.photo} alt="" />
-        </div>
+        <div className="row recipe-image" style={{ backgroundImage: `url(${recipe.photo})` }}></div>
         <div className="row py-3">
           <div className="col-lg-6">
             <div className="row">
@@ -254,7 +282,7 @@ const Recipe = () => {
         <p className='fw-bold display-5 pt-5 pb-2'>Commentaires <span className='fs-6'>({comments.length})</span></p>
         {
           comments.map((item, index) => (
-            <Commentaire photo={item.photo} text={item.comment} fullname={item.userName}/>
+            <Commentaire key={index} photo={item.photo} text={item.comment} fullname={item.userName} />
           ))
         }
         <div className="row">

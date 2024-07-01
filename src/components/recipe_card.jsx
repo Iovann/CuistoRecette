@@ -29,7 +29,7 @@ const Recipe_card = ({ id, image, count, title, avatar, name, cals }) => {
                 </div>
                 <h5 className="card-title mt-2">{title}</h5>
                 <div className="card-text d-flex justify-content-between align-items-center">
-                    <span className='fw-semibold'><img src={avatar} className='rounded-circle img-fluid me-3 avatar' style={{ width: '20%' }} alt="" />{name}</span>
+                    <span className='fw-semibold'><img src={avatar} className='rounded-circle img-fluid me-1 avatar2' alt="" />{name}</span>
                     {/* <span className='p-1 border border-1 rounded-2 border-warning cals text-center d-none d-lg-inline'> <ImFire color="red" className="mb-1" /> <span className="">{cals} cals</span></span> */}
                 </div>
             </div>
