@@ -8,21 +8,43 @@ import Blog_row from '../components/blog_row'
 import Popular_row from '../components/popular_row'
 import { dataCategorie, dataRecipe, dataCard } from '../common/data';
 import Footer from '../components/footer';
+import { useAuth } from '../contexts/AuthContext';
+import { collection, getDocs, getFirestore } from "firebase/firestore";
+import firebaseApp from '../firebaseConfig';
+
 const Home = () => {
-    const [card, setCard] = useState([]);
-    useEffect(() => {
-        setCard(dataCard.slice(0, 6));
-    }, []);
+    const [recipes, setRecipes] = useState([]);
+    const db = getFirestore(firebaseApp);
 
-    const [recipe, setRecipe] = useState([]);
     useEffect(() => {
-        setRecipe(dataRecipe.slice(0, 6));
+        const fetchRecipes = async () => {
+            try {
+                const querySnapshot = await getDocs(collection(db, "recipes"));
+                const recipeList = querySnapshot.docs.map(doc => ({
+                    id: doc.id,
+                    ...doc.data()
+                }));
+                setRecipes(recipeList);
+            } catch (error) {
+                console.error("Erreur lors de la récupération des recettes:", error);
+            }
+        };
+        fetchRecipes();
     }, []);
+    // const [card, setCard] = useState([]);
+    // useEffect(() => {
+    //     setCard(dataCard.slice(0, 6));
+    // }, []);
 
-    const [categorie, setCategorie] = useState([]);
-    useEffect(() => {
-        setCategorie(dataCategorie.slice(0, 8));
-    }, []);
+    // const [recipe, setRecipe] = useState([]);
+    // useEffect(() => {
+    //     setRecipe(dataRecipe.slice(0, 6));
+    // }, []);
+
+    // const [categorie, setCategorie] = useState([]);
+    // useEffect(() => {
+    //     setCategorie(dataCategorie.slice(0, 8));
+    // }, []);
 
     return (
         <>
@@ -34,17 +56,17 @@ const Home = () => {
             <div className="container py-5">
                 <h1>À la une</h1>
                 <p className='brown fs-5 fw-bold text-end pb-5 pt-0'>Voir plus</p>
-                <Row_card card={card} />
+                <Row_card card={recipes} />
             </div>
             <div className="container py-5">
                 <h1>Blog</h1>
                 <p className='brown fs-5 fw-bold text-end pb-5 pt-0'>Voir plus</p>
-                <Blog_row />
+                {/* <Blog_row /> */}
             </div>
             <div className="container pb-5">
                 <h1>Explorez les recettes</h1>
                 <p className='brown fs-5 fw-bold text-end pb-5 pt-0'>Voir plus</p>
-                <Row_card card={recipe} />
+                {/* <Row_card card={recipe} /> */}
             </div>
 
             <div className="container-fluid bg-rose">
@@ -63,9 +85,9 @@ const Home = () => {
             <div className="container py-5">
                 <h1>Categories Populaire</h1>
                 <p className='brown fs-5 fw-bold text-end pb-5 pt-0'>Voir plus</p>
-                <Popular_row pop={categorie} />
+                {/* <Popular_row pop={categorie} /> */}
             </div>
-            <Footer/>
+            <Footer />
         </>
     )
 }

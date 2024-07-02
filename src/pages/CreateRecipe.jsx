@@ -37,6 +37,34 @@ const CreateRecipe = () => {
     });
     const { userData } = useAuth();
 
+    const typeOfDish = [
+        "Entrées",
+        "Plats Principaux",
+        "Accompagnements",
+        "Salades",
+        "Soupes",
+        "Desserts",
+        "Petits Déjeuners",
+        "Brunchs",
+        "Snacks",
+        "Boissons"
+    ]
+
+    const cuisineType = [
+        "Cuisine Africaine",
+        "Cuisine Française",
+        "Cuisine Italienne",
+        "Cuisine Mexicaine",
+        "Cuisine Indienne",
+        "Cuisine Chinoise",
+        "Cuisine Japonaise",
+        "Cuisine Méditerranéenne",
+        "Cuisine Américaine",
+        "Cuisine Thaïlandaise",
+        "Cuisine Moyen-Orientale"
+    ]
+    
+
     const handleFileChange = (event) => {
         const file = event.target.files[0];
 
@@ -228,6 +256,9 @@ const CreateRecipe = () => {
         setFormErrors({ ...formErrors, instructions: event.target.value.trim() === '' });
     };
 
+    const fullname = `${userData.firstName} ${userData.lastName}`
+
+
     return (
         <>
             <NavbarProfile name={fullname} image={userData.avatar} />
@@ -359,10 +390,11 @@ const CreateRecipe = () => {
                             <label htmlFor="cuisine" className="form-label fw-bold fs-4 text-black">Cuisine</label>
                             <select className={`form-select ${formErrors.cuisine ? 'is-invalid' : ''}`} aria-label="Default select example" id='cuisine' value={cuisine} onChange={handleCuisineChange} required>
                                 <option value="">---------------</option>
-                                <option value="Africaine">Africaine</option>
-                                <option value="Européenne">Européenne</option>
-                                <option value="Américaine">Américaine</option>
-                                <option value="Italienne">Italienne</option>
+                                {cuisineType.map((cuisineOption, index) => (
+                                    <option key={index} value={cuisineOption}>
+                                        {cuisineOption}
+                                    </option>
+                                ))}
                             </select>
                             {formErrors.cuisine && <div className="invalid-feedback">Veuillez sélectionner une cuisine.</div>}
                         </div>
@@ -371,10 +403,11 @@ const CreateRecipe = () => {
                             <label htmlFor="categorie" className="form-label fw-bold fs-4 text-black">Catégorie</label>
                             <select className={`form-select ${formErrors.category ? 'is-invalid' : ''}`} aria-label="Default select example" id='categorie' required value={category} onChange={handleCategoryChange}>
                                 <option value="">---------------</option>
-                                <option value="Petit Déjeuner">Petit Déjeuner</option>
-                                <option value="Fast Food">Fast Food</option>
-                                <option value="Dîner">Dîner</option>
-                                <option value="Casse-croute">Casse-croute</option>
+                                {typeOfDish.map((cuisineOption, index) => (
+                                    <option key={index} value={cuisineOption}>
+                                        {cuisineOption}
+                                    </option>
+                                ))}
                             </select>
                             {formErrors.category && <div className="invalid-feedback">Veuillez sélectionner une categorie.</div>}
                         </div>

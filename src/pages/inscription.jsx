@@ -41,7 +41,7 @@ const Inscription = () => {
         lastName: lastName,
         email: user.email,
         phoneNumber: user.phoneNumber || "",
-        avatar: user.photoURL
+        avatar: user.photoURL,
       };
 
       await setDoc(doc(db, "users", user.uid), userData);

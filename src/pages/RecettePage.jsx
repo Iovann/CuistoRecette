@@ -36,6 +36,7 @@ const RecettePage = () => {
 
             let q = collection(db, "recipes");
 
+
             if (activeTab === 'Favoris') {
                 // Récupérer les favoris de l'utilisateur
                 const userDocRef = collection(db, "users");
@@ -48,14 +49,18 @@ const RecettePage = () => {
                     const userData = userDocSnapshot.docs[0].data();
                     const userFavorites = userData.favorites || [];
 
+                    if (userFavorites.length === 0) {
+                        setRecipes([])
+                        return alert("Vous n'avez pas encore de favoris"); // Retourne un tableau vide ou gérez comme vous le souhaitez
+                    }
+
                     // Créer une requête pour récupérer les recettes des favoris de l'utilisateur
                     q = query(q, where("__name__", "in", userFavorites));
                 } else {
-                    console.log("No favorites found for this user.");
+                    alert("No favorites found for this user.");
                     return;
                 }
             } else if (activeTab === 'Les mieux notées') {
-                // Requête pour récupérer les recettes les mieux notées
                 q = query(q, orderBy("rating", "desc"));
             }
 
@@ -86,7 +91,7 @@ const RecettePage = () => {
 
     const handleTabClick = (tabName) => {
         setActiveTab(tabName);
-        setCurrentPage(1); // Reset to first page on tab change
+        setCurrentPage(1);
     };
 
     const navLinkStyle = {

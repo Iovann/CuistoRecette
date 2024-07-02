@@ -12,6 +12,7 @@ import CreateRecipe from './pages/CreateRecipe';
 import Recipe from './pages/Recipe';
 import ProtectedRoute from './components/ProtectedRoute';
 import RecettePage from './pages/RecettePage';
+import Category from './pages/Category';
 
 function App() {
   return (
@@ -23,6 +24,7 @@ function App() {
           <Route path="/connexion" element={<Connexion />} />
           <Route path="/recette" element={<RecettePage />} />
           <Route path="/recette/:id" element={<Recipe />} />
+          <Route path="/category/:category" element={<Category />} />
           <Route path="/verify-email" element={<VerifyEmail />} />
           <Route path="/user" element={<ProtectedRoute element={Acceuil} />} />
           <Route path="/user/profile" element={<ProtectedRoute element={Profile} />} />
