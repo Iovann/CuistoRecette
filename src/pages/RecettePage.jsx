@@ -14,7 +14,7 @@ const RecettePage = () => {
     const [recipes, setRecipes] = useState([]);
     const [currentPage, setCurrentPage] = useState(1);
     const [recipesPerPage] = useState(12);
-    const [activeTab, setActiveTab] = useState('Recette'); // State to track the active tab
+    const [activeTab, setActiveTab] = useState('Recette');
     const fullname = `${userData.firstName} ${userData.lastName}`;
 
     const db = getFirestore(firebaseApp);
@@ -38,7 +38,6 @@ const RecettePage = () => {
 
 
             if (activeTab === 'Favoris') {
-                // Récupérer les favoris de l'utilisateur
                 const userDocRef = collection(db, "users");
                 const userDocSnapshot = await getDocs(query(userDocRef, where("email", "==", user.email)));
                 console.log(userDocSnapshot.empty)

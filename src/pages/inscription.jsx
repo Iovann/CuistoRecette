@@ -62,7 +62,7 @@ const Inscription = () => {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
 
-      await sendEmailVerification(user);
+      await sendEmailVerification(user, { url: window.location.href });
       alert('A verification email has been sent to your email address. Please verify your email to complete the registration.');
 
       navigate('/verify-email', {

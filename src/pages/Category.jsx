@@ -18,29 +18,32 @@ const Category = () => {
 
     useEffect(() => {
         const fetchRecipes = async () => {
-            console.log(category)
+            console.log(category);
             const db = getFirestore();
             const recipesQuery = query(collection(db, "recipes"), where("category", "==", category));
             const recipesSnapshot = await getDocs(recipesQuery);
-            const recipesList = recipesSnapshot.docs.map(doc => doc.data());
+            const recipesList = recipesSnapshot.docs.map(doc => ({
+                id: doc.id,
+                ...doc.data()
+            }));
             setRecipes(recipesList);
         };
-
+        
         fetchRecipes();
     }, [category]);
 
-    // Get current recipes
     const indexOfLastRecipe = currentPage * recipesPerPage;
     const indexOfFirstRecipe = indexOfLastRecipe - recipesPerPage;
     const currentRecipes = recipes.slice(indexOfFirstRecipe, indexOfLastRecipe);
 
-    // Change page
     const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
     const pageNumbers = [];
     for (let i = 1; i <= Math.ceil(recipes.length / recipesPerPage); i++) {
         pageNumbers.push(i);
     }
+
+    console.log(recipes)
 
 
 

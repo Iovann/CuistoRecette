@@ -4,11 +4,13 @@ import Footer from '../components/footer';
 import { CiBookmark } from "react-icons/ci";
 import { BiSolidCategory } from "react-icons/bi";
 import { PiSignOutBold } from "react-icons/pi";
+import { MdOutlineMarkEmailUnread } from "react-icons/md";
+import { Si1Password } from "react-icons/si";
 import { useAuth } from '../contexts/AuthContext';
 import { BsPersonCircle } from "react-icons/bs";
 import { getFirestore, doc, updateDoc } from 'firebase/firestore';
 import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
-import { getAuth, updateEmail, sendEmailVerification, reauthenticateWithCredential, EmailAuthProvider } from 'firebase/auth';
+import { getAuth, reauthenticateWithCredential, EmailAuthProvider, updatePassword, updateEmail, sendEmailVerification } from "firebase/auth";
 import firebaseApp from '../firebaseConfig';
 
 const Profile = () => {
@@ -17,14 +19,16 @@ const Profile = () => {
 
   const [firstName, setFirstName] = useState(userData.firstName);
   const [lastName, setLastName] = useState(userData.lastName);
-  const [email, setEmail] = useState(userData.email);
   const [phoneNumber, setPhoneNumber] = useState(userData.phoneNumber);
   const [avatar, setAvatar] = useState(userData.avatar);
   const [newAvatar, setNewAvatar] = useState(null);
+  const [currentPassword, setCurrentPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [newEmail, setNewEmail] = useState('');
+
 
   const handleFirstNameChange = (e) => setFirstName(e.target.value);
   const handleLastNameChange = (e) => setLastName(e.target.value);
-  const handleEmailChange = (e) => setEmail(e.target.value);
   const handlePhoneNumberChange = (e) => setPhoneNumber(e.target.value);
   const fullname = `${userData.firstName} ${userData.lastName}`
 
@@ -40,34 +44,72 @@ const Profile = () => {
     }
   };
 
+  const db = getFirestore(firebaseApp);
 
-  const auth = getAuth();
-  const user = auth.currentUser;
+  const reauthenticateUser = async (currentPassword) => {
+    const auth = getAuth();
+    const user = auth.currentUser;
+    const credential = EmailAuthProvider.credential(user.email, currentPassword);
 
-  const promptForCredentials = () => {
-    return prompt('Please enter your password to proceed:');
-  };
-
-  const handleUpdateEmail = async (newEmail, password) => {
     try {
-      const credential = EmailAuthProvider.credential(user.email, password);
       await reauthenticateWithCredential(user, credential);
-
-      // Une fois l'utilisateur ré-authentifié avec succès, mettre à jour l'email
-      await updateEmail(user, newEmail);
-
-      // Mettre à jour l'email localement dans l'interface utilisateur
-      setEmail(newEmail);
-
-      // Informer l'utilisateur que l'email a été mis à jour avec succès
-      alert('Your email has been updated successfully.');
+      console.log("User reauthenticated");
     } catch (error) {
-      // Gérer les erreurs de ré-authentification ou de mise à jour de l'email
-      console.error('Error updating email:', error);
-      alert('Failed to update email. Please check your password and try again.');
+      console.error("Error reauthenticating user:", error);
+      throw error;
     }
   };
 
+  const updatePasswordForUser = async (currentPassword, newPassword) => {
+    const auth = getAuth();
+    const user = auth.currentUser;
+
+    try {
+      await reauthenticateUser(currentPassword);
+      await updatePassword(user, newPassword);
+      console.log("Password updated");
+    } catch (error) {
+      console.error("Error updating password:", error);
+    }
+  };
+
+  const updateEmailForUser = async (currentPassword, newEmail) => {
+    const auth = getAuth();
+    const user = auth.currentUser;
+    const db = getFirestore(firebaseApp);
+  
+    try {
+      // Step 1: Reauthenticate user
+      const credential = EmailAuthProvider.credential(user.email, currentPassword);
+      await reauthenticateWithCredential(user, credential);
+  
+      // Step 2: Update email in Firebase Authentication
+      await updateEmail(user, newEmail);
+  
+      // Step 3: Send verification email
+      await sendEmailVerification(user, { url: window.location.href });
+      alert(`A verification email has been sent to ${newEmail}. Please verify your new email address.`);
+  
+      // Step 4: Listen for email verification
+      auth.onAuthStateChanged(async (updatedUser) => {
+        if (updatedUser && updatedUser.emailVerified) {
+          // Step 5: Update email in Firestore
+          const userDocRef = doc(db, "users", updatedUser.uid);
+          await updateDoc(userDocRef, { email: newEmail });
+          console.log("Email updated in Firestore");
+          alert('Email updated successfully in Firestore');
+        }
+      });
+    } catch (error) {
+      console.error("Error updating email:", error);
+      alert('Error updating email: ' + error.message);
+    }
+  };
+
+
+
+  const auth = getAuth();
+  const user = auth.currentUser;
 
   const handleSaveChanges = async () => {
     try {
@@ -77,25 +119,16 @@ const Profile = () => {
       const storage = getStorage(firebaseApp);
       let avatarURL = avatar;
 
-      const newEmail = prompt('Enter your new email:');
-      const password = promptForCredentials();
-
-      if (newEmail && password) {
-        handleUpdateEmail(newEmail, password);
-      }
-
       if (newAvatar) {
         const storageRef = ref(storage, `avatars/${userData.id}/${newAvatar.name}`);
         await uploadBytes(storageRef, newAvatar);
         avatarURL = await getDownloadURL(storageRef);
       }
 
-      // Mettre à jour les données utilisateur dans Firestore
       const userDocRef = doc(db, 'users', user.uid);
       await updateDoc(userDocRef, {
         firstName,
         lastName,
-        email,
         phoneNumber,
         avatar: avatarURL
       });
@@ -162,19 +195,6 @@ const Profile = () => {
           </div>
           <div className="col-lg-5">
             <div className="mb-4 border-bottom border-2 border-brown">
-              <label className="form-label fw-semibold" htmlFor="email">Email</label>
-              <input
-                type="email"
-                id="email"
-                className="form-control out border-0"
-                value={email}
-                onChange={handleEmailChange}
-                required
-              />
-            </div>
-          </div>
-          <div className="col-lg-5">
-            <div className="mb-4 border-bottom border-2 border-brown">
               <label className="form-label fw-semibold" htmlFor="num">Téléphone</label>
               <input
                 type="text"
@@ -196,6 +216,18 @@ const Profile = () => {
               onChange={handleAvatarChange}
               style={{ display: 'none' }}
             />
+          </div>
+        </div>
+
+        <p className="display-6 fw-bolder mt-5 text-center text-lg-start">Sécurité</p>
+        <div className='row gx-5  flex-wrap align-items-center'>
+          <div className="col-lg-4 text-center text-lg-start">
+            <button className='btn bg-brown text-white fw-bolder' data-bs-toggle="modal" data-bs-target="#changePasswordModal"><Si1Password className='me-2' size={20} />Modifier son mot de passe</button>
+          </div>
+        </div>
+        <div className='row gx-5 flex-wrap align-items-center py-3'>
+          <div className="col-lg-4 text-center text-lg-start">
+            <button className='btn bg-brown text-white fw-bolder' data-bs-toggle="modal" data-bs-target="#changeEmailModal"><MdOutlineMarkEmailUnread className='me-2' size={20} />Modifier mon email</button>
           </div>
         </div>
 
@@ -222,10 +254,63 @@ const Profile = () => {
           <div className="col-sm-6"><PiSignOutBold className='mx-3' size={30} />Se déconnecter</div>
           <div className="col-sm-6 mt-4 mt-sm-0 text-end brown fw-bolder">Supprimer le compte</div>
         </div>
+
+
+        {/* Change Password Modal */}
+        <div className="modal fade" id="changePasswordModal" tabIndex="-1" aria-labelledby="changePasswordModalLabel" aria-hidden="true">
+          <div className="modal-dialog">
+            <div className="modal-content">
+              <div className="modal-header">
+                <h5 className="modal-title" id="changePasswordModalLabel">Modifier le mot de passe</h5>
+                <button type="button" className="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+              </div>
+              <div className="modal-body">
+                <div className="mb-3">
+                  <label htmlFor="currentPassword" className="form-label">Mot de passe actuel</label>
+                  <input type="password" className="form-control" id="currentPassword" value={currentPassword} onChange={(e) => setCurrentPassword(e.target.value)} />
+                </div>
+                <div className="mb-3">
+                  <label htmlFor="newPassword" className="form-label">Nouveau mot de passe</label>
+                  <input type="password" className="form-control" id="newPassword" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} />
+                </div>
+              </div>
+              <div className="modal-footer">
+                <button type="button" className="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+                <button type="button" className="btn btn-primary" onClick={() => updatePasswordForUser(currentPassword, newPassword)}>Enregistrer</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+
+        {/* Change Email Modal */}
+        <div className="modal fade" id="changeEmailModal" tabIndex="-1" aria-labelledby="changeEmailModalLabel" aria-hidden="true">
+          <div className="modal-dialog">
+            <div className="modal-content">
+              <div className="modal-header">
+                <h5 className="modal-title" id="changeEmailModalLabel">Modifier l'email</h5>
+                <button type="button" className="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+              </div>
+              <div className="modal-body">
+                <div className="mb-3">
+                  <label htmlFor="currentEmailPassword" className="form-label">Mot de passe actuel</label>
+                  <input type="password" className="form-control" id="currentEmailPassword" value={currentPassword} onChange={(e) => setCurrentPassword(e.target.value)} />
+                </div>
+                <div className="mb-3">
+                  <label htmlFor="newEmail" className="form-label">Nouvel email</label>
+                  <input type="email" className="form-control" id="newEmail" value={newEmail} onChange={(e) => setNewEmail(e.target.value)} />
+                </div>
+              </div>
+              <div className="modal-footer">
+                <button type="button" className="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+                <button type="button" className="btn btn-primary" onClick={() => updateEmailForUser(currentPassword, newEmail)}>Enregistrer</button>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
       <Footer />
     </div>
   );
 }
-
 export default Profile;
