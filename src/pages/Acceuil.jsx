@@ -1,30 +1,27 @@
 import React, { useEffect, useState } from 'react';
 import NavbarProfile from '../components/NavbarProfile';
 import Share from '../components/share';
+import Loading from '../components/Loading';
 import Row_card from '../components/row_card';
 import Blog_row from '../components/blog_row';
 import Popular_row from '../components/popular_row';
 import Footer from '../components/footer';
 import HeroAcceuil from '../components/HeroAcceuil';
 import { useAuth } from '../contexts/AuthContext';
-import { getFirestore, collection, query, getDocs, orderBy, limit, where } from "firebase/firestore";
+import { getFirestore, collection, query, getDocs, orderBy, limit } from "firebase/firestore";
 import firebaseApp from '../firebaseConfig';
 
 const Acceuil = () => {
     const [categorie, setCategorie] = useState([]);
     const [recipes, setRecipes] = useState([]);
     const [sort, setSort] = useState([]);
-    const [loading, setLoading] = useState(false);
+    const [loading, setLoading] = useState(true);
 
     const { userData } = useAuth();
     const db = getFirestore(firebaseApp);
 
-
     useEffect(() => {
-        const db = getFirestore(firebaseApp);
-
         const fetchRecipes = async () => {
-            setLoading(true);
             try {
                 const q = query(collection(db, "recipes"), limit(6));
                 const querySnapshot = await getDocs(q);
@@ -51,42 +48,56 @@ const Acceuil = () => {
                 console.error("Erreur lors de la récupération des recettes triées par la note:", error);
             }
         };
-        fetchCategoriesWithRandomRecipe()
-        fetchRecipes();
-        fetchRecipesWithRating();
-    }, []);
 
+        const fetchCategoriesWithRandomRecipe = async () => {
+            const categories = new Set();
+            const categoryRecipes = {};
 
-    const fetchCategoriesWithRandomRecipe = async () => {
-        const db = getFirestore();
-        const categories = new Set();
-        const categoryRecipes = {};
-
-        // Récupérer toutes les recettes
-        const recipesSnapshot = await getDocs(collection(db, "recipes"));
-        recipesSnapshot.forEach((doc) => {
-            const recipe = doc.data();
-            const category = recipe.category;
-            if (category) {
-                categories.add(category);
-                if (!categoryRecipes[category]) {
-                    categoryRecipes[category] = [];
+            // Récupérer toutes les recettes
+            const recipesSnapshot = await getDocs(collection(db, "recipes"));
+            recipesSnapshot.forEach((doc) => {
+                const recipe = doc.data();
+                const category = recipe.category;
+                if (category) {
+                    categories.add(category);
+                    if (!categoryRecipes[category]) {
+                        categoryRecipes[category] = [];
+                    }
+                    categoryRecipes[category].push(recipe);
                 }
-                categoryRecipes[category].push(recipe);
-            }
-        });
+            });
 
-        // Choisir une recette aléatoire pour chaque catégorie
-        const categoriesWithRandomRecipe = Array.from(categories).map((category) => {
-            const recipes = categoryRecipes[category];
-            const randomRecipe = recipes[Math.floor(Math.random() * recipes.length)];
-            return { category, randomRecipe };
-        });
-        setCategorie(categoriesWithRandomRecipe)
-        return categoriesWithRandomRecipe;
-    };
+            // Choisir une recette aléatoire pour chaque catégorie
+            const categoriesWithRandomRecipe = Array.from(categories).map((category) => {
+                const recipes = categoryRecipes[category];
+                const randomRecipe = recipes[Math.floor(Math.random() * recipes.length)];
+                return { category, randomRecipe };
+            });
 
-    const fullname = `${userData.firstName} ${userData.lastName}`
+            setCategorie(categoriesWithRandomRecipe);
+        };
+
+        const fetchData = async () => {
+            setLoading(true);
+            await Promise.all([fetchRecipes(), fetchRecipesWithRating(), fetchCategoriesWithRandomRecipe()]);
+            setLoading(false);
+        };
+
+        fetchData();
+    }, [db]);
+
+    const fullname = `${userData.firstName} ${userData.lastName}`;
+
+    if (loading) {
+        return (
+            <div className="vh-100 d-flex justify-content-center align-items-center">
+                <div className='text-center'>
+                    <Loading />
+                </div>
+            </div>
+        );
+    }
+
     return (
         <>
             <div id=''>
@@ -117,6 +128,6 @@ const Acceuil = () => {
             <Footer />
         </>
     );
-}
+};
 
 export default Acceuil;

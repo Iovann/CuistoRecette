@@ -22,7 +22,8 @@ const Connexion = () => {
     try {
       const auth = getAuth(firebaseApp);
       setLoading(true);
-      const provider = new GoogleAuthProvider();
+      const provider = new GoogleAuthProvider();span
+      span
       const result = await signInWithPopup(auth, provider);
       const user = result.user;
 
@@ -108,9 +109,13 @@ const Connexion = () => {
                 />
               </div>
 
+              <p className='text-end'> Mot de passe oublié? </p>
+
               <button type="submit" className="btn bg-brown text-white fw-bold btn-block w-100 mb-4" onClick={handleSignIn}>
                 Connexion
               </button>
+              <p className='text-center my-0'>Vous êtes nouveau? <Link to={"/inscription"} className='brown ms-2 text-decoration-none'>Rejoignez notre communauté</Link></p>
+
               <DividerWithText text="ou" />
               <div className="row justify-content-center">
                 <div className="col-12 text-center mx-auto d-flex justify-content-center">

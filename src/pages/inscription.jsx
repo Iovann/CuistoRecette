@@ -160,6 +160,7 @@ const Inscription = () => {
 
               <div className="d-flex justify-content-center">{loading && <Loading />}</div>
               <div className="">
+              <p className='d-none d-lg-block text-center my-0'>Avez-vous un compte?<Link to="/connexion" className='text-decoration-none ms-2' style={{ color: '#B55D51' }}>Connectez-vous</Link></p>
                 <DividerWithText text="ou" />
                 <div className="row justify-content-center">
                   <div className="col-12 text-center mx-auto d-flex justify-content-center">
@@ -170,7 +171,7 @@ const Inscription = () => {
                       onClick={handleGoogleSignUp}
                       style={{ backgroundColor: "#EDEDED" }}
                     >
-                      <FcGoogle className='mx-2 ' size={30} />
+                      <FcGoogle className='mx-2' size={30} />
                       <span className='text-capitalize'>S'inscrire <span className="text-lowercase">avec </span>Google</span>
                     </button>
                   </div>

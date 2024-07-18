@@ -10,8 +10,9 @@ import { useAuth } from '../contexts/AuthContext';
 import { BsPersonCircle } from "react-icons/bs";
 import { getFirestore, doc, updateDoc } from 'firebase/firestore';
 import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
-import { getAuth, reauthenticateWithCredential, EmailAuthProvider, updatePassword, updateEmail, sendEmailVerification } from "firebase/auth";
+import { getAuth, reauthenticateWithCredential, EmailAuthProvider, updatePassword, updateEmail, sendEmailVerification, signOut } from "firebase/auth";
 import firebaseApp from '../firebaseConfig';
+import { Link } from 'react-router-dom';
 
 const Profile = () => {
   const { userData } = useAuth();
@@ -36,6 +37,14 @@ const Profile = () => {
     fileInputRef.current.click();
   };
 
+  const Logout = () => {
+    const auth = getAuth(firebaseApp);
+    signOut(auth).then(() => {
+        console.log('Sign-out successful')
+    }).catch((error) => {
+        console.log("Erreur")
+    });
+}
   const handleAvatarChange = (event) => {
     const file = event.target.files[0];
     if (file) {
@@ -251,7 +260,7 @@ const Profile = () => {
 
         <hr />
         <div className="row pt-2 pb-5 justify-content-between">
-          <div className="col-sm-6"><PiSignOutBold className='mx-3' size={30} />Se déconnecter</div>
+          <div className="col-sm-6" ><PiSignOutBold className='mx-3' size={30} />Se déconnecter</div>
           <div className="col-sm-6 mt-4 mt-sm-0 text-end brown fw-bolder">Supprimer le compte</div>
         </div>
 
@@ -288,7 +297,7 @@ const Profile = () => {
           <div className="modal-dialog">
             <div className="modal-content">
               <div className="modal-header">
-                <h5 className="modal-title" id="changeEmailModalLabel">Modifier l'email</h5>
+                <h5 className="modal-title" id="changeEmailModalLabel">Modifier l'email(Pas encore fonctionnel)</h5>
                 <button type="button" className="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
               </div>
               <div className="modal-body">
@@ -302,8 +311,8 @@ const Profile = () => {
                 </div>
               </div>
               <div className="modal-footer">
-                <button type="button" className="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
-                <button type="button" className="btn btn-primary" onClick={() => updateEmailForUser(currentPassword, newEmail)}>Enregistrer</button>
+                <button type="button" className="btn btn-secondary-subtle" data-bs-dismiss="modal">Fermer</button>
+                <button type="button" className="btn bg-brown disabled" onClick={() => updateEmailForUser(currentPassword, newEmail)}>Enregistrer</button>
               </div>
             </div>
           </div>
