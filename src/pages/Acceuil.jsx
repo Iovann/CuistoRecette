@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import NavbarProfile from '../components/NavbarProfile';
 import Share from '../components/share';
 import Loading from '../components/Loading';
@@ -107,7 +108,7 @@ const Acceuil = () => {
             <Share />
             <div className="container py-5">
                 <h1>À la une</h1>
-                <p className='brown fs-5 fw-bold text-end pb-5 pt-0'>Voir plus</p>
+                <Link to="/recette?tab=LesMieuxNotees" className='text-decoration-none'><p className='brown fs-5 fw-bold text-end pb-5 pt-0 cursor text-decoration-none'>Voir plus</p></Link>
                 <Row_card card={sort} />
             </div>
             <div className="container py-5">
@@ -117,12 +118,12 @@ const Acceuil = () => {
             </div>
             <div className="container pb-5">
                 <h1>Explorez les recettes</h1>
-                <p className='brown fs-5 fw-bold text-end pb-5 pt-0'>Voir plus</p>
+                <Link to="/recette" className='text-decoration-none'><p className='brown fs-5 fw-bold text-end pb-5 pt-0 cursor text-decoration-none'>Voir plus</p></Link>
                 <Row_card card={recipes} />
             </div>
             <div className="container py-5">
                 <h1>Categories Populaire</h1>
-                <p className='brown fs-5 fw-bold text-end pb-5 pt-0'>Voir plus</p>
+                <Link to="/recette" className='text-decoration-none'><p className='brown fs-5 fw-bold text-end pb-5 pt-0 cursor text-decoration-none'>Voir plus</p></Link>
                 <Popular_row pop={categorie} />
             </div>
             <Footer />

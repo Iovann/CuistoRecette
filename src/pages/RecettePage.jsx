@@ -5,7 +5,7 @@ import { collection, getDocs, query, where, orderBy, getFirestore } from "fireba
 import firebaseApp from '../firebaseConfig';
 import Row_card from '../components/row_card';
 import { FaSearch } from "react-icons/fa";
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { getAuth } from 'firebase/auth';
 
 const RecettePage = () => {
@@ -19,10 +19,17 @@ const RecettePage = () => {
     const fullname = `${userData.firstName} ${userData.lastName}`;
 
     const db = getFirestore(firebaseApp);
+    const location = useLocation();
 
     useEffect(() => {
+        const queryParams = new URLSearchParams(location.search);
+        const tab = queryParams.get('tab');
+        if (tab) {
+            if(tab === 'LesMieuxNotees') {setActiveTab("Les mieux notées")}
+            else if(tab === 'Favoris') {setActiveTab("Favoris")}
+        }
         fetchRecipes();
-    }, [activeTab]);
+    }, [location.search]);
 
     useEffect(() => {
         handleSearch(search);
