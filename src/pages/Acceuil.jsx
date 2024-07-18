@@ -86,9 +86,7 @@ const Acceuil = () => {
         fetchData();
     }, [db]);
 
-    const fullname = `${userData.firstName} ${userData.lastName}`;
-
-    if (loading) {
+    if (loading || !userData) {
         return (
             <div className="vh-100 d-flex justify-content-center align-items-center">
                 <div className='text-center'>
@@ -97,6 +95,8 @@ const Acceuil = () => {
             </div>
         );
     }
+
+    const fullname = `${userData.firstName} ${userData.lastName}`;
 
     return (
         <>

@@ -18,6 +18,7 @@ const Inscription = () => {
   const [phoneNumber, setPhoneNumber] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
   const avatar = ""
   const navigate = useNavigate();
 
@@ -54,6 +55,31 @@ const Inscription = () => {
     }
   };
 
+  const handleAuthError = (err) => {
+    switch (err.code) {
+      case 'auth/invalid-email':
+        setError('Adresse email invalide.');
+        break;
+      case 'auth/email-already-in-use':
+        setError('Cet email est déjà utilisé.');
+        break;
+      case 'auth/weak-password':
+        setError('Le mot de passe est trop faible.');
+        break;
+      case 'auth/operation-not-allowed':
+        setError('Les comptes de type Email/Password ne sont pas activés.');
+        break;
+      case 'auth/internal-error':
+        setError('Une erreur interne est survenue. Veuillez réessayer plus tard.');
+        break;
+      case 'auth/too-many-requests':
+        setError('Trop de tentatives. Veuillez réessayer plus tard.');
+        break;
+      default:
+        setError('Une erreur est survenue. Veuillez réessayer.');
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -70,6 +96,7 @@ const Inscription = () => {
       });
 
     } catch (error) {
+      handleAuthError(error)
       console.error("Error creating user:", error);
     } finally {
       setLoading(false);
@@ -157,6 +184,7 @@ const Inscription = () => {
               >
                 S'inscrire
               </button>
+              {error && <p className='text-center alert alert-danger'>{error}</p>}
 
               <div className="d-flex justify-content-center">{loading && <Loading />}</div>
               <div className="">
