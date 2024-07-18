@@ -8,10 +8,11 @@ import { FaSearch } from "react-icons/fa";
 import { Link } from 'react-router-dom';
 import { getAuth } from 'firebase/auth';
 
-
 const RecettePage = () => {
     const { userData } = useAuth();
     const [recipes, setRecipes] = useState([]);
+    const [filteredRecipes, setFilteredRecipes] = useState([]);
+    const [search, setSearch] = useState('');
     const [currentPage, setCurrentPage] = useState(1);
     const [recipesPerPage] = useState(12);
     const [activeTab, setActiveTab] = useState('Recette');
@@ -23,8 +24,11 @@ const RecettePage = () => {
         fetchRecipes();
     }, [activeTab]);
 
-    const fetchRecipes = async () => {
+    useEffect(() => {
+        handleSearch(search);
+    }, [search, recipes]);
 
+    const fetchRecipes = async () => {
         try {
             const db = getFirestore(firebaseApp);
             const auth = getAuth();
@@ -36,55 +40,63 @@ const RecettePage = () => {
 
             let q = collection(db, "recipes");
 
-
             if (activeTab === 'Favoris') {
                 const userDocRef = collection(db, "users");
                 const userDocSnapshot = await getDocs(query(userDocRef, where("email", "==", user.email)));
-                console.log(userDocSnapshot.empty)
-
-                console.log(user.email)
 
                 if (!userDocSnapshot.empty) {
                     const userData = userDocSnapshot.docs[0].data();
                     const userFavorites = userData.favorites || [];
 
                     if (userFavorites.length === 0) {
-                        setRecipes([])
-                        return alert("Vous n'avez pas encore de favoris"); // Retourne un tableau vide ou gérez comme vous le souhaitez
+                        setRecipes([]);
+                        return;
                     }
 
-                    // Créer une requête pour récupérer les recettes des favoris de l'utilisateur
                     q = query(q, where("__name__", "in", userFavorites));
                 } else {
-                    alert("No favorites found for this user.");
+                    setRecipes([]);
                     return;
                 }
             } else if (activeTab === 'Les mieux notées') {
                 q = query(q, orderBy("rating", "desc"));
             }
 
-            // Exécuter la requête et mettre à jour l'état des recettes
             const querySnapshot = await getDocs(q);
             const recipeList = querySnapshot.docs.map(doc => ({
                 id: doc.id,
                 ...doc.data()
             }));
             setRecipes(recipeList);
+            setFilteredRecipes(recipeList);
         } catch (error) {
             console.error("Erreur lors de la récupération des recettes:", error);
         }
     };
 
-    // Get current recipes
+    const handleSearch = (search) => {
+        if (search.trim() === '') {
+            setFilteredRecipes(recipes);
+        } else {
+            const filtered = recipes.filter((recette) =>
+                recette.title.toLowerCase().includes(search.toLowerCase()) || recette.createdBy.name.toLowerCase().includes(search.toLowerCase()) || recette.category.toLowerCase().includes(search.toLowerCase())
+            );
+            setFilteredRecipes(filtered);
+        }
+    };
+
+    const handleSearchChange = (event) => {
+        setSearch(event.target.value);
+    };
+
     const indexOfLastRecipe = currentPage * recipesPerPage;
     const indexOfFirstRecipe = indexOfLastRecipe - recipesPerPage;
-    const currentRecipes = recipes.slice(indexOfFirstRecipe, indexOfLastRecipe);
+    const currentRecipes = filteredRecipes.slice(indexOfFirstRecipe, indexOfLastRecipe);
 
-    // Change page
     const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
     const pageNumbers = [];
-    for (let i = 1; i <= Math.ceil(recipes.length / recipesPerPage); i++) {
+    for (let i = 1; i <= Math.ceil(filteredRecipes.length / recipesPerPage); i++) {
         pageNumbers.push(i);
     }
 
@@ -105,10 +117,17 @@ const RecettePage = () => {
             <div className="container">
                 <hr />
                 <div className='row justify-content-between align-items-center'>
-                    <div className="col-8">
+                    <div className="col-4">
                         <p className='fw-bold display-6 mb-0'>Recette</p>
                     </div>
-                    <div className="col-3 text-end"><FaSearch size={30} color='#B55D51' /></div>
+                    <div className="col-7 col-lg-4 text-end">
+                        <div className="input-group mb-3">
+                            <input type="text" className="form-control form-control-sm" placeholder="Rechercher une recette..." value={search} onChange={handleSearchChange} />
+                            <span className="input-group-text">
+                                <FaSearch size={25} color='#B55D51' className='cursor' />
+                            </span>
+                        </div>
+                    </div>
                 </div>
                 <hr />
 
@@ -125,18 +144,26 @@ const RecettePage = () => {
                 </ul>
 
                 <div className="recette">
-                    <Row_card card={currentRecipes} />
-                    <nav>
-                        <ul className='pagination justify-content-center'>
-                            {pageNumbers.map(number => (
-                                <li key={number} className={`page-item ${number === currentPage ? 'fw-bolder active' : ''}`}>
-                                    <a onClick={() => paginate(number)} className='page-link'>
-                                        {number}
-                                    </a>
-                                </li>
-                            ))}
-                        </ul>
-                    </nav>
+                    {filteredRecipes.length === 0 ? (
+                        <p className="text-center my-4 display-6">
+                            {activeTab === 'Favoris' ? "Vous n'avez pas encore de favoris." : "Aucune recette disponible."}
+                        </p>
+                    ) : (
+                        <>
+                            <Row_card card={currentRecipes} />
+                            <nav>
+                                <ul className='pagination justify-content-center'>
+                                    {pageNumbers.map(number => (
+                                        <li key={number} className={`page-item ${number === currentPage ? 'fw-bolder active' : ''}`}>
+                                            <a onClick={() => paginate(number)} className='page-link'>
+                                                {number}
+                                            </a>
+                                        </li>
+                                    ))}
+                                </ul>
+                            </nav>
+                        </>
+                    )}
                 </div>
             </div>
         </>
