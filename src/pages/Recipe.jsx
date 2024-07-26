@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import NavbarProfile from '../components/NavbarProfile';
 import Footer from '../components/footer';
+import Loading from "../components/Loading"
 import { RiShareBoxFill } from "react-icons/ri";
 import { CiBookmark } from "react-icons/ci";
 import { FaBookmark } from "react-icons/fa";
@@ -74,8 +75,6 @@ const Recipe = () => {
     checkIfFavorite();
   }, [id, auth.currentUser.uid, db]);
 
-  console.log(auth.currentUser.uid)
-
   useEffect(() => {
     if (recipe) {
       setIngredients(
@@ -87,7 +86,6 @@ const Recipe = () => {
   const addBook = async () => {
     try {
       const userRef = doc(db, "users", auth.currentUser.uid);
-
       if (favorite) {
         await updateDoc(userRef, {
           favorites: arrayRemove(id),
@@ -163,7 +161,13 @@ const Recipe = () => {
   };
 
   if (!recipe) {
-    return <div>Loading...</div>;
+    return (
+      <div className="vh-100 d-flex justify-content-center align-items-center">
+        <div className='text-center'>
+          <Loading />
+        </div>
+      </div>
+    )
   }
 
   const fullname = `${userData.firstName} ${userData.lastName}`;
@@ -242,6 +246,9 @@ const Recipe = () => {
               {recipe.steps && recipe.steps.map((instruction, index) => (
                 <li key={index} className="list-group-item">
                   <div className="row d-flex align-items-center">
+                    <div className="d-none d-lg-block  col-1 text-end">
+                      <span className="me-2 px-2 py-1 rounded-circle bg-brown text-white fw-bolder fw-bold">{index + 1}</span>
+                    </div>
                     <div className="col-lg-2 col-sm-3 col-4 border-end border-2 text-center">
                       {instruction.photo && (
                         <img
@@ -261,11 +268,8 @@ const Recipe = () => {
                         />
                       )}
                     </div>
-                    <div className="col-lg-10 col-sm-9 col-8 d-flex">
-                      <div className="row">
-                        <div className="d-none d-lg-block col-lg-1 text-end">
-                          <span className="me-2 px-2 py-1 rounded-circle bg-brown text-white fw-bolder fw-bold">{index + 1}</span>
-                        </div>
+                    <div className="col-lg-9 col-sm-9 col-8 d-flex">
+                      <div className="row justify-content-between">
                         <div className="col-lg-10">
                           <span className=''>{instruction.instructions}</span>
                         </div>
@@ -288,7 +292,7 @@ const Recipe = () => {
         <div className="row">
           <p className='fw-bold fs-1 py-3'>Évaluez cette recette et partagez votre avis</p>
           <div className="mb-3 col-lg-8">
-            <p className='text-start'><Rating value={value} onChange={(e) => setValue(e.value)} cancel={false} /></p>
+            <div className='text-start'><Rating value={value} onChange={(e) => setValue(e.value)} cancel={false} /></div>
             <textarea className="form-control bg-secondary-subtle" onChange={handleChangeComment} rows="6"></textarea>
             <p className='text-end mt-1'>
               <button className='btn bg-brown text-white fw-bold text-capitalize' onClick={handleSubmit}> <FaTelegramPlane className='me-2' size={20} />Envoyer</button>

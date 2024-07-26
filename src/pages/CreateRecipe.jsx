@@ -4,7 +4,7 @@ import Footer from '../components/footer';
 import { MdDelete } from "react-icons/md";
 import { IoIosAddCircleOutline } from "react-icons/io";
 import { MdOutlineAddAPhoto } from "react-icons/md";
-import { Link } from 'react-router-dom';
+import { Link, Navigate, useNavigate } from 'react-router-dom';
 import firebaseApp from '../firebaseConfig';
 import { getFirestore, collection, addDoc, doc, setDoc } from "firebase/firestore";
 import { getStorage, ref, uploadString, getDownloadURL } from "firebase/storage";
@@ -12,6 +12,7 @@ import { getAuth } from "firebase/auth";
 import { useAuth } from '../contexts/AuthContext';
 
 const CreateRecipe = () => {
+    const navigate = useNavigate();
     const [imageUrl, setImageUrl] = useState(null);
     const [description, setDescription] = useState('');
     const [ingredients, setIngredients] = useState(['']);
@@ -210,6 +211,7 @@ const CreateRecipe = () => {
                 createdBy: userInfo,
             });
             alert('Recette enregistrée avec succès');
+            navigate('/recette');
         } catch (error) {
             console.error('Erreur lors de l\'enregistrement de la recette:', error);
             alert('Erreur lors de l\'enregistrement de la recette');
@@ -285,7 +287,7 @@ const CreateRecipe = () => {
                             <label htmlFor="recipeimage" className="form-label fw-bold fs-4 text-black">Image de la recette</label>
                             <div style={{ minHeight: "250px" }} className='bg-secondary-subtle' id='recipeimage'>
                                 {imageUrl && (
-                                    <img src={imageUrl} alt="Uploaded" style={{ maxWidth: '100%', height: '250px' }} />
+                                    <img src={imageUrl} alt="Uploaded" style={{ width: '100%', height: '250px' }} />
                                 )}
                             </div>
                             <input

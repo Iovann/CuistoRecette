@@ -29,7 +29,7 @@ const RecettePage = () => {
             else if(tab === 'Favoris') {setActiveTab("Favoris")}
         }
         fetchRecipes();
-    }, [location.search]);
+    }, [location.search, activeTab]);
 
     useEffect(() => {
         handleSearch(search);
