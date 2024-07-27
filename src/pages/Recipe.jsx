@@ -17,6 +17,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { getAuth } from 'firebase/auth';
 
 const Recipe = () => {
+  const d = new Date
   const [value, setValue] = useState(0);
   const [favorite, setFavorite] = useState(false);
   const [recipe, setRecipe] = useState(null);
@@ -27,7 +28,7 @@ const Recipe = () => {
   const [comment, setComment] = useState("");
   const [comments, setComments] = useState([]);
   const auth = getAuth(firebaseApp);
-
+  const date = `${d.getDate()}/${d.getMonth() + 1}/${d.getFullYear()}`
   useEffect(() => {
     const fetchRecipe = async () => {
       try {
@@ -125,6 +126,7 @@ const Recipe = () => {
         userId: auth.currentUser.uid,
         userName: fullname,
         photo: userData.avatar,
+        date: date
       });
       const q = query(ratingRef, where("recipeId", "==", id));
       const querySnapshot = await getDocs(q);
@@ -147,7 +149,6 @@ const Recipe = () => {
       alert("Votre commentaire et note ont été ajoutés avec succès !");
       setComment("");
       setValue(0);
-      fetchComments();
     } catch (error) {
       console.error("Error submitting rating:", error);
       alert("Une erreur est survenue lors de l'envoi de votre commentaire. Veuillez réessayer.");
@@ -184,7 +185,6 @@ const Recipe = () => {
           )}
         </p>
         <h1 className='disply-4 fw-bolder'>{recipe.title}</h1>
-
         <div className='d-flex align-items-center mt-3 flex-wrap'>
           <span className='mb-0 me-sm-2'>
             <img src={recipe.createdBy.photoURL} className='rounded-circle avatar img-fluid' alt="" />
@@ -199,7 +199,9 @@ const Recipe = () => {
 
         <p className='fw-semibold text-black'>{recipe.description}</p>
 
-        <div className="row recipe-image" style={{ backgroundImage: `url(${recipe.photo})` }}></div>
+        <div className="row justify-content-center">
+          <div className="recipe-image justify-content-between" style={{ backgroundImage: `url(${recipe.photo})` }}></div>
+        </div>
         <div className="row py-3">
           <div className="col-lg-6">
             <div className="row">
@@ -269,24 +271,20 @@ const Recipe = () => {
                       )}
                     </div>
                     <div className="col-lg-9 col-sm-9 col-8 d-flex">
-                      <div className="row justify-content-between">
-                        <div className="col-lg-10">
-                          <span className=''>{instruction.instructions}</span>
-                        </div>
-                      </div>
+                      <span className=''>{instruction.instructions}</span>
                     </div>
                   </div>
                 </li>
               ))}
             </ul>
           </div>
-        </div>
+        </div >
         <hr className='border border-5 border-danger my-5' />
 
         <p className='fw-bold display-5 pt-5 pb-2'>Commentaires <span className='fs-6'>({comments.length})</span></p>
         {
           comments.map((item, index) => (
-            <Commentaire key={index} photo={item.photo} text={item.comment} fullname={item.userName} />
+            <Commentaire key={index} photo={item.photo} text={item.comment} fullname={item.userName} rating={item.rating} date={item.date} />
           ))
         }
         <div className="row">
@@ -299,9 +297,9 @@ const Recipe = () => {
             </p>
           </div>
         </div>
-      </div>
+      </div >
       <Footer />
-    </div>
+    </div >
   );
 };
 

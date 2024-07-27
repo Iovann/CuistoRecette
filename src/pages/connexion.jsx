@@ -72,22 +72,25 @@ const Connexion = () => {
 
   const handleAuthError = (err) => {
     switch (err.code) {
-      case 'auth/invalid-email':
-        setError('Adresse email invalide.');
-        break;
-      case 'auth/user-disabled':
-        setError("Cet utilisateur a été désactivé.");
-        break;
-      case 'auth/user-not-found':
-        setError("Aucun utilisateur trouvé avec cet email.");
-        break;
-      case 'auth/wrong-password':
-        setError('Mot de passe incorrect.');
-        break;
-      default:
-        setError('Une erreur est survenue. Veuillez réessayer.');
+        case 'auth/invalid-email':
+            setError('Adresse email invalide.');
+            break;
+        case 'auth/user-disabled':
+            setError("Cet utilisateur a été désactivé.");
+            break;
+        case 'auth/user-not-found':
+            setError("Aucun utilisateur trouvé avec cet email.");
+            break;
+        case 'auth/wrong-password':
+            setError('Mot de passe incorrect.');
+            break;
+        case 'auth/invalid-credential':
+            setError('Identifiants invalides.');
+            break;
+        default:
+            setError('Une erreur est survenue. Veuillez réessayer.');
     }
-  };
+};
 
   const handleSubmit = (e) => {
     e.preventDefault();
