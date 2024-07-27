@@ -12,12 +12,12 @@ import { getFirestore, doc, updateDoc } from 'firebase/firestore';
 import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { getAuth, reauthenticateWithCredential, EmailAuthProvider, updatePassword, updateEmail, sendEmailVerification, signOut } from "firebase/auth";
 import firebaseApp from '../firebaseConfig';
-import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 
 const Profile = () => {
   const { userData } = useAuth();
   const fileInputRef = useRef(null);
-
+  const navigate = useNavigate()
   const [firstName, setFirstName] = useState(userData.firstName);
   const [lastName, setLastName] = useState(userData.lastName);
   const [phoneNumber, setPhoneNumber] = useState(userData.phoneNumber);
@@ -115,10 +115,11 @@ const Profile = () => {
     }
   };
 
+  const viewRecipe = () => { navigate("/recette?tab=Favoris")}
 
 
   const auth = getAuth();
-  const user = auth.currentUser;
+  const user = auth.cuLinkrrentUser;
 
   const handleSaveChanges = async () => {
     try {
@@ -243,18 +244,12 @@ const Profile = () => {
         <p className="display-6 fw-bolder mt-5 text-center text-lg-start">Organisation personnalisée</p>
         <div className='row gx-5  flex-wrap align-items-center'>
           <div className="col-lg-4 text-center text-lg-start">
-            <button className='btn bg-brown text-white fw-bolder'><CiBookmark /> Mes Favoris</button>
-          </div>
-          <div className="col-lg-3 d-none d-xl-block">
-            <p>Voir mes favoris</p>
+            <button className='btn bg-brown text-white fw-bolder' onClick={viewRecipe}><CiBookmark /> Mes Favoris</button>
           </div>
         </div>
         <div className='row gx-5 flex-wrap align-items-center py-3'>
           <div className="col-lg-4 text-center text-lg-start">
-            <button className='btn bg-brown text-white fw-bolder'><BiSolidCategory className='me-2' />Catégories</button>
-          </div>
-          <div className="col-lg-3 d-none d-xl-block">
-            <p>Categorie de recettes</p>
+            <button className='btn bg-brown text-white fw-bolder'><BiSolidCategory className='me-2' />Mes Recette</button>
           </div>
         </div>
 
