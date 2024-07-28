@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import NavbarProfile from '../components/NavbarProfile';
 import Footer from '../components/footer';
 import { MdDelete } from "react-icons/md";
@@ -6,12 +6,12 @@ import { IoIosAddCircleOutline } from "react-icons/io";
 import { MdOutlineAddAPhoto } from "react-icons/md";
 import { Link, Navigate, useNavigate, useParams } from 'react-router-dom';
 import firebaseApp from '../firebaseConfig';
-import { getFirestore, collection, addDoc, doc, setDoc } from "firebase/firestore";
+import { getFirestore, collection, addDoc, setDoc, doc, updateDoc, getDoc } from "firebase/firestore";
 import { getStorage, ref, uploadString, getDownloadURL } from "firebase/storage";
 import { getAuth } from "firebase/auth";
 import { useAuth } from '../contexts/AuthContext';
 
-const CreateRecipe = () => {
+const UpdateRecipe = () => {
     const { id } = useParams();
     const navigate = useNavigate();
     const [imageUrl, setImageUrl] = useState(null);
@@ -135,53 +135,31 @@ const CreateRecipe = () => {
 
     const handleSubmit = async (event) => {
         event.preventDefault();
-
+    
         const db = getFirestore(firebaseApp);
         const storage = getStorage(firebaseApp);
         const auth = getAuth(firebaseApp);
         const user = auth.currentUser;
-
+    
         if (!user) {
-            alert('Vous devez être connecté pour soumettre une recette.');
+            alert('Vous devez être connecté pour mettre à jour une recette.');
             return;
         }
-
-        const newFormErrors = {
-            title: title.trim() === '',
-            description: description.trim() === '',
-            ingredients: ingredients.some(ingredient => ingredient.trim() === ''),
-            servings: servings.trim() === '',
-            prepTime: prepTime.trim() === '',
-            cookTime: cookTime.trim() === '',
-            cuisine: cuisine.trim() === '',
-            category: category.trim() === '',
-            photo: photo === null,
-            instructions: items.some(item => item.instructions.trim() === '')
-        };
-
-        setFormErrors(newFormErrors);
-
-        const hasErrors = Object.values(newFormErrors).some(error => error);
-        if (hasErrors) {
-            alert('Veuillez remplir tous les champs obligatoires correctement.');
-            return;
-        }
-
+    
         try {
-            const recipeRef = doc(collection(db, 'recipes'));
-            const recipeId = recipeRef.id;
-
-            let photoUrl = null;
-            if (photo) {
-                const photoRef = ref(storage, `recipes/${recipeId}/mainPhoto.jpg`);
+            const recipeRef = doc(db, 'recipes', id);
+    
+            let photoUrl = imageUrl;
+            if (photo && photo.startsWith('data:image')) {
+                const photoRef = ref(storage, `recipes/${id}/mainPhoto.jpg`);
                 await uploadString(photoRef, photo, 'data_url');
                 photoUrl = await getDownloadURL(photoRef);
             }
-
-            const steps = await Promise.all(items.map(async (item, index) => {
-                let stepPhotoUrl = null;
-                if (item.photo) {
-                    const stepPhotoRef = ref(storage, `recipes/${recipeId}/steps/step${index + 1}.jpg`);
+    
+            const updatedSteps = await Promise.all(items.map(async (item, index) => {
+                let stepPhotoUrl = item.photo;
+                if (item.photo && item.photo.startsWith('data:image')) {
+                    const stepPhotoRef = ref(storage, `recipes/${id}/steps/step${index + 1}.jpg`);
                     await uploadString(stepPhotoRef, item.photo, 'data_url');
                     stepPhotoUrl = await getDownloadURL(stepPhotoRef);
                 }
@@ -190,15 +168,15 @@ const CreateRecipe = () => {
                     photo: stepPhotoUrl
                 };
             }));
-
-            const fullname = `${userData.firstName} ${userData.lastName}`
+    
+            const fullname = `${userData.firstName} ${userData.lastName}`;
             const userInfo = {
                 userId: user.uid,
                 name: fullname,
                 photoURL: userData.avatar
             };
-
-            await setDoc(recipeRef, {
+    
+            await updateDoc(recipeRef, {
                 title,
                 description,
                 ingredients,
@@ -208,14 +186,16 @@ const CreateRecipe = () => {
                 cuisine,
                 category,
                 photo: photoUrl,
-                steps,
-                createdBy: userInfo,
+                steps: updatedSteps,
+                updatedBy: userInfo,
+                updatedAt: new Date()
             });
-            alert('Recette enregistrée avec succès');
+    
+            alert('Recette mise à jour avec succès');
             navigate('/recette');
         } catch (error) {
-            console.error('Erreur lors de l\'enregistrement de la recette:', error);
-            alert('Erreur lors de l\'enregistrement de la recette');
+            console.error('Erreur lors de la mise à jour de la recette:', error);
+            alert('Erreur lors de la mise à jour de la recette');
         }
     };
 
@@ -260,28 +240,35 @@ const CreateRecipe = () => {
     };
 
     const fullname = `${userData.firstName} ${userData.lastName}`
-    if (id) {
-        const fetchRecipe = async () => {
-            const db = getFirestore();
-            const recipeDoc = doc(db, 'recipes', id);
-            const recipeSnapshot = await getDoc(recipeDoc);
-            if (recipeSnapshot.exists()) {
-                const recipeData = recipeSnapshot.data();
-                setTitle(recipeData.title);
-                setDescription(recipeData.description);
-                setIngredients(recipeData.ingredients);
-                setPrepTime(recipeData.prepTime);
-                setCookTime(recipeData.cookTime);
-                setServings(recipeData.servings);
-                setCuisine(recipeData.cuisine);
-                setCategory(recipeData.category);
-                setPhoto(recipeData.photo);
-                setImageUrl(recipeData.photo);
-                setItems(recipeData.steps || []);
-            }
-        };
-        fetchRecipe();
-    }
+    
+    useEffect(() => {
+        if (id) {
+            const fetchRecipe = async () => {
+                const db = getFirestore();
+                const recipeDoc = doc(db, 'recipes', id);
+                const recipeSnapshot = await getDoc(recipeDoc);
+                if (recipeSnapshot.exists()) {
+                    const recipeData = recipeSnapshot.data();
+                    setTitle(recipeData.title);
+                    setDescription(recipeData.description);
+                    setIngredients(recipeData.ingredients);
+                    setPrepTime(recipeData.prepTime);
+                    setCookTime(recipeData.cookTime);
+                    setServings(recipeData.servings);
+                    setCuisine(recipeData.cuisine);
+                    setCategory(recipeData.category);
+                    setPhoto(recipeData.photo);
+                    setImageUrl(recipeData.photo);
+                    setItems(recipeData.steps || []);
+                }
+            };
+            fetchRecipe();
+        }
+
+        else{
+
+        }
+    }, [id]);
 
     return (
         <>
@@ -290,10 +277,10 @@ const CreateRecipe = () => {
                 <hr />
                 <div className='row justify-content-between align-items-center'>
                     <div className="col-8">
-                        <p className='fw-bold display-6 mb-0'>Créer une recette</p>
+                        <p className='fw-bold display-6 mb-0'>Modifier la recette</p>
                     </div>
                     <div className="col-4 text-end">
-                        <Link to="/user"><button className='btn bg-brown text-capitalize mb-0 text-white fw-bolder' onClick={handleSubmit}>Enregistrer</button></Link>
+                        <Link to="/user"><button className='btn bg-brown text-capitalize mb-0 text-white fw-bolder' onClick={handleSubmit}>Modifier</button></Link>
                     </div>
                 </div>
                 <hr />
@@ -443,4 +430,4 @@ const CreateRecipe = () => {
         </>
     );
 };
-export default CreateRecipe
+export default UpdateRecipe

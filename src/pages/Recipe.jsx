@@ -10,14 +10,16 @@ import Star from '../components/star';
 import Commentaire from '../components/Commentaire';
 import { FaTelegramPlane } from "react-icons/fa";
 import { Rating } from 'primereact/rating';
-import { useParams } from 'react-router-dom';
-import { doc, getDoc, getFirestore, updateDoc, arrayUnion, arrayRemove, collection, addDoc, query, where, getDocs } from 'firebase/firestore';
+import { useParams, useNavigate } from 'react-router-dom';
+import { doc, getDoc, getFirestore, updateDoc, arrayUnion, arrayRemove, collection, addDoc, query, where, getDocs, deleteDoc } from 'firebase/firestore';
 import firebaseApp from '../firebaseConfig';
 import { useAuth } from '../contexts/AuthContext';
 import { getAuth } from 'firebase/auth';
 
 const Recipe = () => {
+  let author = false
   const d = new Date
+  const navigate = useNavigate()
   const [value, setValue] = useState(0);
   const [favorite, setFavorite] = useState(false);
   const [recipe, setRecipe] = useState(null);
@@ -171,18 +173,41 @@ const Recipe = () => {
     )
   }
 
+  const handleDelete = async (recipeId) => {
+    try {
+      const del = confirm("Êtes vous sûr de vouloir supprimer la recette?")
+      if (del) {
+        await deleteDoc(doc(db, "recipes", recipeId));
+        alert("La recette à été supprimé avec succès")
+        navigate("/recette")
+      }
+    } catch (error) {
+      console.error("Erreur lors de la suppression de la recette:", error);
+    }
+  };
+
+  const handleUpdate = (recipeId) => {navigate(`/updaterecipe/${recipeId}`)}
+
+  if (auth.currentUser.uid === recipe.createdBy.userId) { author = true }
   const fullname = `${userData.firstName} ${userData.lastName}`;
   return (
     <div>
       <NavbarProfile name={fullname} image={userData.avatar} />
       <div className="container">
-        <p className="text-end">
+        <p className="text-sm-end">
           <RiShareBoxFill className='mx-2' size={25} />
           {favorite ? (
             <FaBookmark className='mx-2' size={25} onClick={addBook} />
           ) : (
             <CiBookmark className='mx-2' size={25} onClick={addBook} />
           )}
+          {
+            author &&
+            <span>
+              <button className='btn bg-brown text-white fw-bolder mx-2' onClick={() => handleUpdate(id)}>Modifier</button>
+              <button className='btn bg-brown text-white fw-bolder' onClick={() => handleDelete(id)}>Suppimer</button>
+            </span>
+          }
         </p>
         <h1 className='disply-4 fw-bolder'>{recipe.title}</h1>
         <div className='d-flex align-items-center mt-3 flex-wrap'>

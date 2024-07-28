@@ -14,6 +14,7 @@ import ProtectedRoute from './components/ProtectedRoute';
 import RecettePage from './pages/RecettePage';
 import Category from './pages/Category';
 import MyRecipe from './pages/MyRecipe';
+import UpdateRecipe from './pages/UpdateRecipe';
 
 function App() {
   return (
@@ -29,13 +30,16 @@ function App() {
           <Route path="/verify-email" element={<VerifyEmail />} />
           <Route path="/user" element={<ProtectedRoute element={Acceuil} />} />
           <Route path="/user/profile" element={<ProtectedRoute element={Profile} />} />
+          <Route path="/user/add/;id" element={<ProtectedRoute element={CreateRecipe} />} />
           <Route path="/user/add" element={<ProtectedRoute element={CreateRecipe} />} />
           <Route path="/myrecipe" element={<ProtectedRoute element={MyRecipe} />} />
+          <Route path="/updaterecipe/:id" element={<ProtectedRoute element={UpdateRecipe} />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
     </AuthProvider>
   );
 }
+
 
 export default App;
