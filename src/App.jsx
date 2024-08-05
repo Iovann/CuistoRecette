@@ -15,13 +15,14 @@ import RecettePage from './pages/RecettePage';
 import Category from './pages/Category';
 import MyRecipe from './pages/MyRecipe';
 import UpdateRecipe from './pages/UpdateRecipe';
+import RedirectIfAuthenticated from './components/RedirectIfAuthenticated';
 
 function App() {
   return (
     <AuthProvider>
       <BrowserRouter>
         <Routes>
-          <Route path="/" element={<Home />} />
+          <Route path="/" element={<RedirectIfAuthenticated><Home /></RedirectIfAuthenticated>} />
           <Route path="/inscription" element={<Inscription />} />
           <Route path="/connexion" element={<Connexion />} />
           <Route path="/recette" element={<RecettePage />} />
@@ -30,7 +31,7 @@ function App() {
           <Route path="/verify-email" element={<VerifyEmail />} />
           <Route path="/user" element={<ProtectedRoute element={Acceuil} />} />
           <Route path="/user/profile" element={<ProtectedRoute element={Profile} />} />
-          <Route path="/user/add/;id" element={<ProtectedRoute element={CreateRecipe} />} />
+          <Route path="/user/add/:id" element={<ProtectedRoute element={CreateRecipe} />} />
           <Route path="/user/add" element={<ProtectedRoute element={CreateRecipe} />} />
           <Route path="/myrecipe" element={<ProtectedRoute element={MyRecipe} />} />
           <Route path="/updaterecipe/:id" element={<ProtectedRoute element={UpdateRecipe} />} />
@@ -40,6 +41,5 @@ function App() {
     </AuthProvider>
   );
 }
-
 
 export default App;

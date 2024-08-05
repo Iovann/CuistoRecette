@@ -6,7 +6,6 @@ import Share from '../components/share'
 import Row_card from '../components/row_card'
 import Blog_row from '../components/blog_row'
 import Popular_row from '../components/popular_row'
-import { dataCategorie, dataRecipe, dataCard } from '../common/data';
 import Footer from '../components/footer';
 import { useAuth } from '../contexts/AuthContext';
 import { getFirestore, collection, query, getDocs, orderBy, limit } from "firebase/firestore";

@@ -195,10 +195,13 @@ const UpdateRecipe = () => {
             navigate('/recette');
         } catch (error) {
             console.error('Erreur lors de la mise à jour de la recette:', error);
-            alert('Erreur lors de la mise à jour de la recette');
+            if (error.code === 'storage/unauthorized') {
+                alert('Vous n\'avez pas les permissions nécessaires pour accéder à ce fichier.');
+            } else {
+                alert('Erreur lors de la mise à jour de la recette');
+            }
         }
     };
-
     const dataURLtoFile = (dataurl, filename) => {
         const arr = dataurl.split(','), mime = arr[0].match(/:(.*?);/)[1];
         const bstr = atob(arr[1]);

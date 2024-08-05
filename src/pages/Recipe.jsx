@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import NavbarProfile from '../components/NavbarProfile';
 import Footer from '../components/footer';
 import Loading from "../components/Loading"
-import { RiShareBoxFill } from "react-icons/ri";
 import { CiBookmark } from "react-icons/ci";
 import { FaBookmark } from "react-icons/fa";
 import { FaRegMessage } from "react-icons/fa6";
@@ -52,14 +51,17 @@ const Recipe = () => {
         const commentsRef = collection(db, "rating");
         const q = query(commentsRef, where("recipeId", "==", id));
         const querySnapshot = await getDocs(q);
-
-        const commentsList = querySnapshot.docs.map((doc) => doc.data());
-        setComments(commentsList);
+    
+        const commentsList = querySnapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data()
+        }));
+            setComments(commentsList);
       } catch (error) {
         console.error("Error fetching comments:", error);
       }
     };
-
+    
     const checkIfFavorite = async () => {
       try {
         const userRef = doc(db, "users", auth.currentUser.uid);
@@ -76,7 +78,7 @@ const Recipe = () => {
     fetchRecipe();
     fetchComments();
     checkIfFavorite();
-  }, [id, auth.currentUser.uid, db]);
+  }, [id, auth.currentUser.uid, db, comments]);
 
   useEffect(() => {
     if (recipe) {
@@ -186,7 +188,7 @@ const Recipe = () => {
     }
   };
 
-  const handleUpdate = (recipeId) => {navigate(`/updaterecipe/${recipeId}`)}
+  const handleUpdate = (recipeId) => { navigate(`/updaterecipe/${recipeId}`) }
 
   if (auth.currentUser.uid === recipe.createdBy.userId) { author = true }
   const fullname = `${userData.firstName} ${userData.lastName}`;
@@ -195,7 +197,6 @@ const Recipe = () => {
       <NavbarProfile name={fullname} image={userData.avatar} />
       <div className="container">
         <p className="text-sm-end">
-          <RiShareBoxFill className='mx-2' size={25} />
           {favorite ? (
             <FaBookmark className='mx-2' size={25} onClick={addBook} />
           ) : (
@@ -305,11 +306,10 @@ const Recipe = () => {
           </div>
         </div >
         <hr className='border border-5 border-danger my-5' />
-
         <p className='fw-bold display-5 pt-5 pb-2'>Commentaires <span className='fs-6'>({comments.length})</span></p>
         {
           comments.map((item, index) => (
-            <Commentaire key={index} photo={item.photo} text={item.comment} fullname={item.userName} rating={item.rating} date={item.date} />
+            <Commentaire key={index} photo={item.photo} text={item.comment} fullname={item.userName} rating={item.rating} date={item.date} commentId={item.id} id={id} userId={item.userId}/>
           ))
         }
         <div className="row">
