@@ -56,7 +56,7 @@ const NavbarProfile = ({ name, image }) => {
                             <Link to="" className="nav-link">Blog</Link>
                         </li>
                         <li className="nav-item mx-1">
-                            <Link to="" className="nav-link">A propos</Link>
+                            <Link to="/user/profile" className="nav-link">A propos</Link>
                         </li>
                     </ul>
 

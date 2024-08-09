@@ -54,7 +54,6 @@ const Acceuil = () => {
             const categories = new Set();
             const categoryRecipes = {};
 
-            // Récupérer toutes les recettes
             const recipesSnapshot = await getDocs(collection(db, "recipes"));
             recipesSnapshot.forEach((doc) => {
                 const recipe = doc.data();
@@ -68,7 +67,6 @@ const Acceuil = () => {
                 }
             });
 
-            // Choisir une recette aléatoire pour chaque catégorie
             const categoriesWithRandomRecipe = Array.from(categories).map((category) => {
                 const recipes = categoryRecipes[category];
                 const randomRecipe = recipes[Math.floor(Math.random() * recipes.length)];
